@@ -1,0 +1,29 @@
+# Entorno virtual
+venv/
+env/
+.venv/
+
+# Variables de entorno — NUNCA al repo
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Tests y cobertura
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+Project2-Grupo2/
