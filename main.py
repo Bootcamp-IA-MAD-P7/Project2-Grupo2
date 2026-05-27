@@ -5,6 +5,12 @@ import logging
 
 from app.core.config import settings
 
+from app.routers.plan import router as plan_router
+from app.routers.member import router as member_router
+
+from app.routers.plan import router as plan_router
+from app.routers.member import router as member_router
+
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
     format="[%(asctime)s] %(levelname)s %(name)s — %(message)s",
@@ -28,6 +34,11 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     lifespan=lifespan,
 )
+
+# CONECTAMOS EL ROUTER DE LOS PLANES Y DE LOS MIEMBROS
+app.include_router(plan_router)
+app.include_router(member_router)
+
 
 app.add_middleware(
     CORSMiddleware,

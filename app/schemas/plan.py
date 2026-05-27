@@ -1,18 +1,19 @@
 from pydantic import BaseModel
 from typing import Optional
 
-# Lo que EXIGIMOS cuando alguien quiere CREAR un plan nuevo desde la web
-class PlanCreate(BaseModel):
-    nombre: str
-    precio: float = 0.0
-    descripcion: Optional[str] = None
+# ESTA ES LA PLANTILLA BASE CON LOS CAMPOS COMUNES DE UN PLAN
+class PlanBase(BaseModel):
+    name: str
+    price: float = 0.0
+    description: Optional[str] = None
 
-# Lo que DEVOLVEMOS cuando el sistema lee un plan (incluye el ID de la base de datos)
-class PlanRead(BaseModel):
+# ESTE ES EL MOLDE QUE SE USA PARA CREAR UN PLAN NUEVO
+class PlanCreate(PlanBase):
+    pass
+
+# ESTE ES EL MOLDE PARA MOSTRAR EL PLAN EN PANTALLA (INCLUYE EL ID)
+class PlanResponse(PlanBase):
     id: int
-    nombre: str
-    precio: float
-    descripcion: Optional[str] = None
 
     class Config:
         from_attributes = True
