@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
 
-from app.database import get_session #ver si se llama así o get_db_session o algo así, depende de cómo lo hayas nombrado en tu proyecto
+from app.db.session import get_session
 from app.schemas.attendance import AttendanceCreate, AttendanceResponse
 from app.services.attendance_service import create_attendance
 
@@ -21,4 +21,4 @@ def register_attendance(
     attendance_data: AttendanceCreate,
     session: Session = Depends(get_session),
 ):
-    return create_attendance(attendance_data, session)
+    return create_attendance(session, attendance_data)

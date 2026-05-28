@@ -8,8 +8,8 @@ from app.schemas.attendance import AttendanceCreate
 
 
 def create_attendance(
-    attendance_data: AttendanceCreate,
     session: Session,
+    attendance_data: AttendanceCreate,
 ) -> Attendance:
     member = session.get(Member, attendance_data.member_id)
 
