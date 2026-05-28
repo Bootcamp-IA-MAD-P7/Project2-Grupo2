@@ -6,102 +6,154 @@ BASE_URL = "http://localhost:8000"
 
 st.set_page_config(
     page_title="GymAPI Manager",
-    page_icon="🏋️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
     html, body, [class*="css"] {
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'Nunito', sans-serif;
     }
 
     .stApp {
-        background-color: #0f0f0f;
-        color: #f0f0f0;
+        background-color: #f3f0fa;
+        color: #3b2f5e;
     }
 
     section[data-testid="stSidebar"] {
-        background-color: #1a1a1a;
-        border-right: 1px solid #2a2a2a;
+        background: linear-gradient(180deg, #e8e0f8 0%, #ddd5f5 100%);
+        border-right: 1px solid #cdc0ef;
     }
 
     section[data-testid="stSidebar"] .stRadio label {
-        color: #f0f0f0 !important;
+        color: #4a3880 !important;
+        font-weight: 600;
     }
 
     h1, h2, h3 {
-        font-family: 'Space Mono', monospace;
-        color: #e8ff47;
-        letter-spacing: -0.5px;
+        font-family: 'Nunito', sans-serif;
+        color: #6b4fbb;
+        font-weight: 800;
+        letter-spacing: -0.3px;
     }
 
-    .metric-card {
-        background: #1a1a1a;
-        border: 1px solid #2a2a2a;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 8px 0;
-    }
+    h1::before { content: "✦ "; }
 
     .tag {
         display: inline-block;
-        background: #e8ff47;
-        color: #0f0f0f;
-        font-family: 'Space Mono', monospace;
+        background: #e8e0f8;
+        color: #6b4fbb;
+        font-family: 'Nunito', sans-serif;
         font-size: 11px;
         font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 4px;
+        padding: 3px 10px;
+        border-radius: 999px;
         margin: 2px;
+        border: 1px solid #cdc0ef;
     }
 
-    .tag-red { background: #ff4747; color: white; }
-    .tag-green { background: #47ff8a; color: #0f0f0f; }
-    .tag-blue { background: #47b4ff; color: #0f0f0f; }
-    .tag-grey { background: #444; color: #f0f0f0; }
+    .tag-red { background: #fde8f0; color: #c0436a; border-color: #f5b8cf; }
+    .tag-green { background: #e6f8f0; color: #2d8f66; border-color: #a8e8cc; }
+    .tag-blue { background: #e8f0fd; color: #3a5fc0; border-color: #b8caee; }
+    .tag-grey { background: #eeebf8; color: #7a6ea0; border-color: #cdc0ef; }
 
     .stButton > button {
-        background: #e8ff47;
-        color: #0f0f0f;
-        font-family: 'Space Mono', monospace;
+        background: linear-gradient(135deg, #9b7fe8, #b89af0);
+        color: white;
+        font-family: 'Nunito', sans-serif;
         font-weight: 700;
         border: none;
-        border-radius: 6px;
-        padding: 8px 20px;
+        border-radius: 999px;
+        padding: 8px 22px;
         cursor: pointer;
         transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(155,127,232,0.3);
     }
 
     .stButton > button:hover {
-        background: #ffffff;
+        background: linear-gradient(135deg, #8b6fd8, #a88ae0);
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(155,127,232,0.4);
     }
 
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input,
     .stSelectbox > div > div,
     .stDateInput > div > div > input {
-        background: #1a1a1a !important;
-        color: #f0f0f0 !important;
-        border: 1px solid #333 !important;
-        border-radius: 6px !important;
+        background: #ffffff !important;
+        color: #3b2f5e !important;
+        border: 1.5px solid #cdc0ef !important;
+        border-radius: 12px !important;
     }
 
-    .stSuccess { background: #1a2e1a !important; }
-    .stError { background: #2e1a1a !important; }
+    .stSuccess { background: #e6f8f0 !important; border-radius: 12px; }
+    .stError { background: #fde8f0 !important; border-radius: 12px; }
+    .stInfo { background: #eee8fc !important; border-radius: 12px; }
+    .stWarning { background: #fdf5e8 !important; border-radius: 12px; }
 
-    hr { border-color: #2a2a2a; }
+    hr { border-color: #cdc0ef; }
 
     .row-card {
-        background: #1a1a1a;
-        border: 1px solid #2a2a2a;
+        background: #ffffff;
+        border: 1.5px solid #e0d8f5;
+        border-radius: 18px;
+        padding: 16px 20px;
+        margin: 8px 0;
+        box-shadow: 0 2px 12px rgba(107,79,187,0.07);
+        transition: box-shadow 0.2s;
+    }
+
+    .row-card:hover {
+        box-shadow: 0 4px 20px rgba(107,79,187,0.13);
+    }
+
+    /* Slider purple */
+    .stSlider > div > div > div > div {
+        background: linear-gradient(90deg, #9b7fe8, #b89af0) !important;
+    }
+
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #ece6f9;
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
         border-radius: 8px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        color: #7a6ea0;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: #9b7fe8 !important;
+        color: white !important;
+    }
+
+    /* Metrics */
+    [data-testid="metric-container"] {
+        background: #ffffff;
+        border: 1.5px solid #e0d8f5;
+        border-radius: 16px;
         padding: 16px;
-        margin: 6px 0;
+        box-shadow: 0 2px 8px rgba(107,79,187,0.07);
+    }
+
+    [data-testid="metric-container"] label {
+        color: #9b7fe8 !important;
+        font-weight: 700;
+    }
+
+    /* Sidebar logo area */
+    .sidebar-logo {
+        text-align: center;
+        padding: 10px 0 5px 0;
+        font-size: 32px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -177,7 +229,8 @@ def status_tag(status):
 
 # ── SIDEBAR ────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🏋️ GymAPI")
+    st.markdown('<div class="sidebar-logo">🌸</div>', unsafe_allow_html=True)
+    st.markdown("## GymAPI")
     st.markdown("---")
     module = st.radio(
         "Module",
@@ -185,14 +238,24 @@ with st.sidebar:
         label_visibility="collapsed"
     )
     st.markdown("---")
-    st.markdown(f"<small style='color:#555'>API: {BASE_URL}</small>", unsafe_allow_html=True)
+    st.markdown(f"<small style='color:#a090c8'>API: {BASE_URL}</small>", unsafe_allow_html=True)
+
+module_icons = {
+    "Shifts": "🗓️",
+    "Reservations": "📌",
+    "Members": "👤",
+    "Memberships": "💜",
+    "Plans": "📋",
+    "Payments": "💳",
+    "Attendance": "✅",
+}
 
 
 # ══════════════════════════════════════════════════════════════════════════
 # SHIFTS
 # ══════════════════════════════════════════════════════════════════════════
 if module == "Shifts":
-    st.markdown("# Shifts")
+    st.markdown(f"# {module_icons['Shifts']} Shifts")
 
     tab1, tab2, tab3 = st.tabs(["📋 List", "➕ Create", "📊 Availability"])
 
@@ -217,29 +280,29 @@ if module == "Shifts":
                 with st.container():
                     st.markdown(f"""
                     <div class="row-card">
-                        <strong style="font-family:'Space Mono',monospace;color:#e8ff47">{shift.get('class_name','')}</strong>
+                        <strong style="font-family:'Nunito',sans-serif;color:#6b4fbb;font-size:16px">✦ {shift.get('class_name','')}</strong>
                         &nbsp;&nbsp;<span class="tag">{shift.get('day_of_week','').upper()}</span>
-                        &nbsp;<span class="tag tag-blue">{shift.get('start_time','')} – {shift.get('end_time','')}</span>
+                        &nbsp;<span class="tag tag-blue">🕐 {shift.get('start_time','')} – {shift.get('end_time','')}</span>
                         &nbsp;<span class="tag tag-grey">👤 {shift.get('instructor','')}</span>
-                        &nbsp;<span class="tag">Max {shift.get('max_capacity','')} spots</span>
-                        <span style="float:right;color:#555;font-size:12px">ID: {shift.get('id','')}</span>
+                        &nbsp;<span class="tag">🏃 Max {shift.get('max_capacity','')} spots</span>
+                        <span style="float:right;color:#b0a0d8;font-size:12px">ID: {shift.get('id','')}</span>
                     </div>
                     """, unsafe_allow_html=True)
 
                     col_u, col_d = st.columns([1, 1])
                     with col_u:
-                        with st.expander("Edit"):
+                        with st.expander("✏️ Edit"):
                             new_instructor = st.text_input("Instructor", value=shift.get("instructor", ""), key=f"inst_{shift['id']}")
                             new_capacity = st.number_input("Max capacity", value=shift.get("max_capacity", 1), min_value=1, key=f"cap_{shift['id']}")
-                            if st.button("Save", key=f"save_{shift['id']}"):
+                            if st.button("Save changes", key=f"save_{shift['id']}"):
                                 result, err = api_patch(f"/shifts/{shift['id']}", {"instructor": new_instructor, "max_capacity": new_capacity})
                                 if err:
                                     st.error(err)
                                 else:
-                                    st.success("Updated")
+                                    st.success("✨ Updated!")
                                     st.rerun()
                     with col_d:
-                        if st.button("🗑 Delete", key=f"del_{shift['id']}"):
+                        if st.button("🗑️ Delete", key=f"del_{shift['id']}"):
                             result, err = api_delete(f"/shifts/{shift['id']}")
                             if err:
                                 st.error(err)
@@ -247,10 +310,10 @@ if module == "Shifts":
                                 st.success("Deleted")
                                 st.rerun()
         else:
-            st.info("No shifts found.")
+            st.info("💜 No shifts found.")
 
     with tab2:
-        st.markdown("### Create new shift")
+        st.markdown("### ✨ Create new shift")
         col1, col2 = st.columns(2)
         with col1:
             class_name = st.text_input("Class name")
@@ -262,7 +325,7 @@ if module == "Shifts":
             max_capacity = st.number_input("Max capacity", min_value=1, value=10)
             active_slot = st.checkbox("Active", value=True)
 
-        if st.button("Create Shift"):
+        if st.button("🌸 Create Shift"):
             if not class_name or not instructor:
                 st.error("Class name and instructor are required.")
             else:
@@ -279,17 +342,17 @@ if module == "Shifts":
                 if err:
                     st.error(err)
                 else:
-                    st.success(f"Shift created with ID {result['id']}")
+                    st.success(f"✨ Shift created with ID {result['id']}")
 
     with tab3:
-        st.markdown("### Check availability")
+        st.markdown("### 🔍 Check availability")
         shifts_data, _ = api_get("/shifts/")
         if shifts_data:
             shift_options = {f"{s['class_name']} ({s['day_of_week']}) — ID {s['id']}": s['id'] for s in shifts_data}
             selected = st.selectbox("Select shift", list(shift_options.keys()))
             check_date = st.date_input("Date", value=date.today())
 
-            if st.button("Check"):
+            if st.button("✦ Check availability"):
                 shift_id = shift_options[selected]
                 avail, err = api_get(f"/shifts/{shift_id}/availability", params={"date": str(check_date)})
                 if err:
@@ -300,7 +363,7 @@ if module == "Shifts":
                     col2.metric("Active Bookings", avail["active_bookings"])
                     col3.metric("Available Spots", avail["available_spots"])
                     if avail["is_available"]:
-                        st.success("✅ Class has available spots")
+                        st.success("✅ Class has available spots!")
                     else:
                         st.error("❌ Class is full")
 
@@ -309,7 +372,7 @@ if module == "Shifts":
 # RESERVATIONS
 # ══════════════════════════════════════════════════════════════════════════
 elif module == "Reservations":
-    st.markdown("# Reservations")
+    st.markdown(f"# {module_icons['Reservations']} Reservations")
 
     tab1, tab2 = st.tabs(["📋 List", "➕ Create"])
 
@@ -327,9 +390,9 @@ elif module == "Reservations":
             for r in data:
                 st.markdown(f"""
                 <div class="row-card">
-                    <strong style="font-family:'Space Mono',monospace">Reservation #{r.get('id')}</strong>
+                    <strong style="font-family:'Nunito',sans-serif;color:#6b4fbb">✦ Reservation #{r.get('id')}</strong>
                     &nbsp;&nbsp;{status_tag(r.get('status',''))}
-                    <br><small style="color:#888">Shift ID: {r.get('shift_id')} &nbsp;|&nbsp; Date: {r.get('date')} &nbsp;|&nbsp; Member: {r.get('member_id')}</small>
+                    <br><small style="color:#9b8ec4">Shift ID: {r.get('shift_id')} &nbsp;|&nbsp; 📅 {r.get('date')} &nbsp;|&nbsp; 👤 Member {r.get('member_id')}</small>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -353,17 +416,17 @@ elif module == "Reservations":
                                 st.success("Marked as no-show")
                                 st.rerun()
         elif member_id_filter == 0:
-            st.info("Enter a member ID above to see their reservations.")
+            st.info("💜 Enter a member ID above to see their reservations.")
 
     with tab2:
-        st.markdown("### Create new reservation")
+        st.markdown("### ✨ Create new reservation")
         shifts_data, _ = api_get("/shifts/")
         if shifts_data:
             shift_options = {f"{s['class_name']} ({s['day_of_week']}) — ID {s['id']}": s['id'] for s in shifts_data}
             selected_shift = st.selectbox("Select shift", list(shift_options.keys()))
             reservation_date = st.date_input("Date", value=date.today())
 
-            if st.button("Create Reservation"):
+            if st.button("🌸 Create Reservation"):
                 payload = {
                     "shift_id": shift_options[selected_shift],
                     "date": str(reservation_date)
@@ -372,7 +435,7 @@ elif module == "Reservations":
                 if err:
                     st.error(err)
                 else:
-                    st.success(f"Reservation created — ID {result['id']} | Status: {result['status']}")
+                    st.success(f"✨ Reservation created — ID {result['id']} | Status: {result['status']}")
         else:
             st.warning("No shifts available. Create a shift first.")
 
@@ -381,7 +444,7 @@ elif module == "Reservations":
 # MEMBERS
 # ══════════════════════════════════════════════════════════════════════════
 elif module == "Members":
-    st.markdown("# Members")
+    st.markdown(f"# {module_icons['Members']} Members")
 
     tab1, tab2 = st.tabs(["📋 List", "➕ Create"])
 
@@ -393,16 +456,16 @@ elif module == "Members":
             for m in data:
                 st.markdown(f"""
                 <div class="row-card">
-                    <strong style="font-family:'Space Mono',monospace;color:#e8ff47">{m.get('first_name','')} {m.get('last_name','')}</strong>
+                    <strong style="font-family:'Nunito',sans-serif;color:#6b4fbb;font-size:16px">✦ {m.get('first_name','')} {m.get('last_name','')}</strong>
                     &nbsp;&nbsp;{status_tag(m.get('is_active') and 'active' or 'inactive')}
-                    <br><small style="color:#888">📧 {m.get('email','')} &nbsp;|&nbsp; 📞 {m.get('phone','')} &nbsp;|&nbsp; ID: {m.get('id')}</small>
+                    <br><small style="color:#9b8ec4">📧 {m.get('email','')} &nbsp;|&nbsp; 📞 {m.get('phone','')} &nbsp;|&nbsp; ID: {m.get('id')}</small>
                 </div>
                 """, unsafe_allow_html=True)
         else:
-            st.info("No members found.")
+            st.info("💜 No members found.")
 
     with tab2:
-        st.markdown("### Register new member")
+        st.markdown("### ✨ Register new member")
         col1, col2 = st.columns(2)
         with col1:
             first_name = st.text_input("First name")
@@ -412,7 +475,7 @@ elif module == "Members":
             phone = st.text_input("Phone")
             birth_date = st.date_input("Birth date", value=None)
 
-        if st.button("Register Member"):
+        if st.button("🌸 Register Member"):
             if not first_name or not last_name or not email:
                 st.error("First name, last name and email are required.")
             else:
@@ -428,14 +491,14 @@ elif module == "Members":
                 if err:
                     st.error(err)
                 else:
-                    st.success(f"Member registered — ID {result['id']}")
+                    st.success(f"✨ Member registered — ID {result['id']}")
 
 
 # ══════════════════════════════════════════════════════════════════════════
 # MEMBERSHIPS
 # ══════════════════════════════════════════════════════════════════════════
 elif module == "Memberships":
-    st.markdown("# Memberships")
+    st.markdown(f"# {module_icons['Memberships']} Memberships")
 
     tab1, tab2 = st.tabs(["📋 List", "➕ Create"])
 
@@ -459,23 +522,23 @@ elif module == "Memberships":
             for m in data:
                 st.markdown(f"""
                 <div class="row-card">
-                    <strong style="font-family:'Space Mono',monospace">Membership #{m.get('id')}</strong>
+                    <strong style="font-family:'Nunito',sans-serif;color:#6b4fbb">✦ Membership #{m.get('id')}</strong>
                     &nbsp;&nbsp;{status_tag(m.get('status',''))}
-                    <br><small style="color:#888">Member ID: {m.get('member_id')} &nbsp;|&nbsp; Plan ID: {m.get('plan_id')} &nbsp;|&nbsp; {m.get('start_date','')} → {m.get('end_date','')}</small>
+                    <br><small style="color:#9b8ec4">👤 Member {m.get('member_id')} &nbsp;|&nbsp; 📋 Plan {m.get('plan_id')} &nbsp;|&nbsp; 📅 {m.get('start_date','')} → {m.get('end_date','')}</small>
                 </div>
                 """, unsafe_allow_html=True)
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("Renew", key=f"renew_{m['id']}"):
+                    if st.button("🔄 Renew", key=f"renew_{m['id']}"):
                         result, err = api_post(f"/memberships/{m['id']}/renew", {})
                         if err:
                             st.error(err)
                         else:
-                            st.success("Renewed")
+                            st.success("✨ Renewed!")
                             st.rerun()
         else:
-            st.info("No memberships found.")
+            st.info("💜 No memberships found.")
 
         st.markdown("---")
         st.markdown("### ⚠️ Expiring soon")
@@ -487,179 +550,12 @@ elif module == "Memberships":
             for m in expiring:
                 st.markdown(f"""
                 <div class="row-card">
-                    <strong>Membership #{m.get('id')}</strong> — Member {m.get('member_id')} — expires {m.get('end_date')}
+                    <strong style="color:#c0436a">⚠️ Membership #{m.get('id')}</strong> — Member {m.get('member_id')} — expires {m.get('end_date')}
                 </div>
                 """, unsafe_allow_html=True)
         else:
-            st.success(f"No memberships expiring in the next {days} days.")
+            st.success(f"✨ No memberships expiring in the next {days} days.")
 
     with tab2:
-        st.markdown("### Create membership")
-        plans_data, _ = api_get("/plans/")
-        if plans_data:
-            plan_options = {f"{p.get('name','Plan')} — ID {p['id']}": p['id'] for p in plans_data}
-            selected_plan = st.selectbox("Select plan", list(plan_options.keys()))
-        else:
-            selected_plan = None
-            st.warning("No plans available.")
-
-        member_id = st.number_input("Member ID", min_value=1, step=1)
-        start_date = st.date_input("Start date", value=date.today())
-
-        if st.button("Create Membership"):
-            if not plans_data:
-                st.error("No plans available.")
-            else:
-                payload = {
-                    "member_id": int(member_id),
-                    "plan_id": plan_options[selected_plan],
-                    "start_date": str(start_date)
-                }
-                result, err = api_post("/memberships/", payload)
-                if err:
-                    st.error(err)
-                else:
-                    st.success(f"Membership created — ID {result['id']}")
-
-
-# ══════════════════════════════════════════════════════════════════════════
-# PLANS
-# ══════════════════════════════════════════════════════════════════════════
-elif module == "Plans":
-    st.markdown("# Plans")
-
-    tab1, tab2 = st.tabs(["📋 List", "➕ Create"])
-
-    with tab1:
-        data, err = api_get("/plans/")
-        if err:
-            st.error(err)
-        elif data:
-            for p in data:
-                st.markdown(f"""
-                <div class="row-card">
-                    <strong style="font-family:'Space Mono',monospace;color:#e8ff47">{p.get('name','')}</strong>
-                    &nbsp;&nbsp;<span class="tag">€{p.get('price','')}</span>
-                    &nbsp;<span class="tag tag-blue">{p.get('duration_days','')} days</span>
-                    <span style="float:right;color:#555;font-size:12px">ID: {p.get('id')}</span>
-                    <br><small style="color:#888">{p.get('description','')}</small>
-                </div>
-                """, unsafe_allow_html=True)
-        else:
-            st.info("No plans found.")
-
-    with tab2:
-        st.markdown("### Create new plan")
-        plan_name = st.text_input("Plan name")
-        plan_price = st.number_input("Price (€)", min_value=0.0, step=0.01)
-        plan_duration = st.number_input("Duration (days)", min_value=1, value=30)
-        plan_description = st.text_area("Description")
-
-        if st.button("Create Plan"):
-            if not plan_name:
-                st.error("Plan name is required.")
-            else:
-                payload = {
-                    "name": plan_name,
-                    "price": plan_price,
-                    "duration_days": plan_duration,
-                    "description": plan_description
-                }
-                result, err = api_post("/plans/", payload)
-                if err:
-                    st.error(err)
-                else:
-                    st.success(f"Plan created — ID {result['id']}")
-
-
-# ══════════════════════════════════════════════════════════════════════════
-# PAYMENTS
-# ══════════════════════════════════════════════════════════════════════════
-elif module == "Payments":
-    st.markdown("# Payments")
-
-    tab1, tab2 = st.tabs(["📋 List", "➕ Register"])
-
-    with tab1:
-        data, err = api_get("/payments/")
-        if err:
-            st.error(err)
-        elif data:
-            for p in data:
-                st.markdown(f"""
-                <div class="row-card">
-                    <strong style="font-family:'Space Mono',monospace">Payment #{p.get('id')}</strong>
-                    &nbsp;&nbsp;{status_tag(p.get('status',''))}
-                    &nbsp;<span class="tag">€{p.get('amount','')}</span>
-                    &nbsp;<span class="tag tag-grey">{p.get('payment_method','')}</span>
-                    <br><small style="color:#888">Membership ID: {p.get('membership_id')} &nbsp;|&nbsp; Date: {p.get('payment_date','')}</small>
-                </div>
-                """, unsafe_allow_html=True)
-
-        st.markdown("---")
-        if st.button("📥 Export CSV"):
-            csv_data, err = api_get("/payments/export-csv")
-            if err:
-                st.error(err)
-            else:
-                st.download_button("Download CSV", data=str(csv_data), file_name="payments.csv", mime="text/csv")
-
-    with tab2:
-        st.markdown("### Register payment")
-        membership_id = st.number_input("Membership ID", min_value=1, step=1)
-        amount = st.number_input("Amount (€)", min_value=0.0, step=0.01)
-        method = st.selectbox("Payment method", ["cash", "card", "transfer"])
-        reference = st.text_input("Reference (optional)")
-
-        if st.button("Register Payment"):
-            payload = {
-                "membership_id": int(membership_id),
-                "amount": amount,
-                "payment_method": method,
-            }
-            if reference:
-                payload["reference"] = reference
-            result, err = api_post("/payments/", payload)
-            if err:
-                st.error(err)
-            else:
-                st.success(f"Payment registered — ID {result['id']}")
-
-
-# ══════════════════════════════════════════════════════════════════════════
-# ATTENDANCE
-# ══════════════════════════════════════════════════════════════════════════
-elif module == "Attendance":
-    st.markdown("# Attendance")
-
-    tab1, tab2 = st.tabs(["📋 List", "➕ Register"])
-
-    with tab1:
-        data, err = api_get("/attendances/")
-        if err:
-            st.error(err)
-        elif data:
-            for a in data:
-                st.markdown(f"""
-                <div class="row-card">
-                    <strong style="font-family:'Space Mono',monospace">Attendance #{a.get('id')}</strong>
-                    <br><small style="color:#888">Reservation ID: {a.get('reservation_id')} &nbsp;|&nbsp; Check-in: {a.get('check_in','')} &nbsp;|&nbsp; Check-out: {a.get('check_out','—')}</small>
-                </div>
-                """, unsafe_allow_html=True)
-        else:
-            st.info("No attendance records found.")
-
-    with tab2:
-        st.markdown("### Register attendance")
-        reservation_id = st.number_input("Reservation ID", min_value=1, step=1)
-        notes = st.text_input("Notes (optional)")
-
-        if st.button("Register Attendance"):
-            payload = {"reservation_id": int(reservation_id)}
-            if notes:
-                payload["notes"] = notes
-            result, err = api_post("/attendances/", payload)
-            if err:
-                st.error(err)
-            else:
-                st.success(f"Attendance registered — ID {result['id']}")
+        st.markdown("### ✨ Create membership")
+        plans_data,
