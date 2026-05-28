@@ -8,7 +8,7 @@ from enum import Enum
 if TYPE_CHECKING:
     from .member import Member
     from .plan import Plan
-    from .payments import Payment
+    from .payment import Payment
 
 
 class MembershipStatus(str, Enum):
