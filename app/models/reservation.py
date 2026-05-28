@@ -7,6 +7,7 @@ from sqlalchemy import UniqueConstraint
 if TYPE_CHECKING:
     from .shift import AvailableShift
     from .member import Member
+    from .attendance import Attendance
 
 
 class ReservationStatus(str, Enum):
@@ -32,3 +33,4 @@ class Reservation(SQLModel, table=True):
 
     member: Optional["Member"] = Relationship(back_populates="reservations")
     shift: Optional["AvailableShift"] = Relationship(back_populates="reservations")
+    attendances: list["Attendance"] = Relationship(back_populates="reservation")
