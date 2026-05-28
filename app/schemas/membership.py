@@ -28,7 +28,7 @@ class MembershipUpdate(SQLModel):
 class MembershipRead(MembershipBase):
     id: int
     end_date: Optional[date]
-    is_valid: bool = False
+    is_active: bool = False
     days_remaining: int = 0
     created_at: datetime
     updated_at: datetime

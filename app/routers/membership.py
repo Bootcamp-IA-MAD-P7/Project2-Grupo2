@@ -31,7 +31,7 @@ def expiring_soon(days: int = Query(7, ge=1, le=60), session: Session = Depends(
 
 @router.get("/{membership_id}", response_model=MembershipRead, summary="Membership detail")
 def detail(membership_id: int, session: Session = Depends(get_session), _=auth):
-    return MembershipService.get_by_id(session, membership_id)
+    return MembershipService.expiring_soon(session, membership_id)
 
 
 @router.patch("/{membership_id}", response_model=MembershipRead, summary="Update status")

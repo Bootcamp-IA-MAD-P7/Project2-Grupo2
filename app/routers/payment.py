@@ -5,42 +5,43 @@ from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 from ..db.session import get_session
 from ..core.security import get_current_user_sub
-from ..services.pago import PagoService
-from ..schemas.pago import PagoCreate, PagoRead, PagoUpdate
+from ..services.payment import PaymentService
+from ..schemas.payment import PaymentCreate, PaymentRead, PaymentUpdate
 from datetime import date
 
-router = APIRouter(prefix="/pagos", tags=["pagos"])
+router = APIRouter(prefix="/payments", tags=["payments"])
 auth = Depends(get_current_user_sub)
 
 
-@router.get("/", response_model=list[PagoRead], summary="Listar pagos")
-def listar(estado=None, metodo=None, membresia_id=None, skip: int = 0,
-           limit: int = Query(20, le=100), session: Session = Depends(get_session), _=auth):
-    return PagoService.get_all(session, estado=estado, metodo=metodo,
-                               membresia_id=membresia_id, skip=skip, limit=limit)
+@router.get("/", response_model=list[PaymentRead], summary="List payments")
+def list_payments(status=None, method=None, membership_id=None, skip: int = 0,
+                  limit: int = Query(20, le=100), session: Session = Depends(get_session), _=auth):
+    return PaymentService.get_all(session, status=status, method=method,
+                                  membership_id=membership_id, skip=skip, limit=limit)
 
 
-@router.post("/", response_model=PagoRead, status_code=201, summary="Registrar pago")
-def crear(data: PagoCreate, session: Session = Depends(get_session), _=auth):
-    return PagoService.create(session, data)
+@router.post("/", response_model=PaymentRead, status_code=201, summary="Register payment")
+def create(data: PaymentCreate, session: Session = Depends(get_session), _=auth):
+    return PaymentService.create(session, data)
 
 
-@router.get("/exportar-csv", summary="Exportar historial de pagos a CSV")
-def exportar_csv(session: Session = Depends(get_session), _=auth):
-    rows = PagoService.exportar_csv(session)
+@router.get("/export-csv", summary="Export payment history to CSV")
+def export_csv(session: Session = Depends(get_session), _=auth):
+    rows = PaymentService.export_csv(session)
     output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=["id", "miembro", "plan", "monto",
-                                                 "metodo_pago", "estado", "referencia", "fecha_pago"])
+    writer = csv.DictWriter(output, fieldnames=[
+        "id", "member", "plan", "amount", "payment_method", "status", "reference", "payment_date"
+    ])
     writer.writeheader()
     writer.writerows(rows)
     output.seek(0)
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=pagos_{date.today()}.csv"},
+        headers={"Content-Disposition": f"attachment; filename=payments_{date.today()}.csv"},
     )
 
 
-@router.get("/{pago_id}", response_model=PagoRead, summary="Detalle pago")
-def detalle(pago_id: int, session: Session = Depends(get_session), _=auth):
-    return PagoService.get_by_id(session, pago_id)
+@router.get("/{payment_id}", response_model=PaymentRead, summary="Payment detail")
+def detail(payment_id: int, session: Session = Depends(get_session), _=auth):
+    return PaymentService.get_by_id(session, payment_id)
