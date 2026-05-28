@@ -17,3 +17,4 @@ class AttendanceResponse(BaseModel):
     check_out: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+    

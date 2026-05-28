@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 
 from app.models.attendance import Attendance
 from app.models.member import Member
-from app.models.reservation import Reservation
+from app.models.reservation import Reservation, ReservationStatus
 from app.schemas.attendance import AttendanceCreate
 
 
@@ -25,6 +25,18 @@ def create_attendance(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Reservation not found",
+        )
+
+    if reservation.member_id != attendance_data.member_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reservation does not belong to this member",
+        )
+
+    if reservation.status != ReservationStatus.confirmed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Attendance can only be registered for confirmed reservations",
         )
 
     existing_attendance = session.exec(
@@ -50,3 +62,12 @@ def create_attendance(
     session.refresh(attendance)
 
     return attendance
+
+
+def get_attendances(
+    session: Session,
+) -> list[Attendance]:
+    statement = select(Attendance)
+    attendances = session.exec(statement).all()
+
+    return attendances

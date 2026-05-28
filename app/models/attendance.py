@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING
 
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -10,6 +11,13 @@ if TYPE_CHECKING:
 
 class Attendance(SQLModel, table=True):
     __tablename__ = "attendances"
+    __table_args__ = (
+        UniqueConstraint(
+            "member_id",
+            "reservation_id",
+            name="uq_attendance_member_reservation",
+        ),
+    )
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
