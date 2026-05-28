@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from ..models.membership import Membership, MembershipStatus
 from ..models.member import MemberStatus
 from ..models.payment import Payment, PaymentStatus
+from ..models.plan import Plan                         
 from ..schemas.membership import MembershipCreate, MembershipUpdate
 
 logger = logging.getLogger("gymapi")
@@ -58,7 +59,9 @@ class MembershipService:
         current = MembershipService.get_by_id(session, membership_id)
         if current.status not in [MembershipStatus.active, MembershipStatus.expired]:
             raise HTTPException(status_code=400, detail="Only active or expired memberships can be renewed")
-        plan = session.get(current.plan.__class__, current.plan_id)
+        plan = session.get(Plan, current.plan_id)
+        if not plan:
+            raise HTTPException(status_code=404, detail="Plan not found")
         new_membership = Membership(
             member_id=current.member_id,
             plan_id=current.plan_id,

@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 import logging
 
 from app.core.config import settings
+from app.routers.membership import router as membership_router
+from app.routers.payment import router as payment_router
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -36,6 +38,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(membership_router, prefix="/api/v1")
+app.include_router(payment_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["health"])
