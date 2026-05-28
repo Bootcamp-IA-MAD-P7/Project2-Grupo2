@@ -3,7 +3,7 @@ from httpx import AsyncClient, ASGITransport
 from sqlmodel import SQLModel, Session, create_engine
 from sqlmodel.pool import StaticPool
 
-from app.main import app
+from main import app
 from app.db.session import get_session
 
 
