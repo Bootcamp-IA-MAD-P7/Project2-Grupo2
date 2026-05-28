@@ -66,8 +66,15 @@ def create_attendance(
 
 def get_attendances(
     session: Session,
+    offset: int = 0,
+    limit: int = 20,
 ) -> list[Attendance]:
-    statement = select(Attendance)
+    statement = (
+        select(Attendance)
+        .order_by(Attendance.check_in.desc())
+        .offset(offset)
+        .limit(limit)
+    )
     attendances = session.exec(statement).all()
 
     return attendances

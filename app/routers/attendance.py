@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session
 
 from app.db.session import get_session
@@ -31,9 +31,11 @@ def register_attendance(
     response_model=list[AttendanceResponse],
     status_code=status.HTTP_200_OK,
     summary="List attendances",
-    description="Returns all registered attendances.",
+    description="Returns registered attendances with pagination.",
 )
 def list_attendances(
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     session: Session = Depends(get_session),
 ):
-    return get_attendances(session)
+    return get_attendances(session, offset, limit)
