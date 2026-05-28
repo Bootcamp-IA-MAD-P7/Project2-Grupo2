@@ -6,6 +6,7 @@ from sqlalchemy import func
 from app.models.shift import AvailableShift
 from app.models.reservation import Reservation, ReservationStatus
 from app.schemas.shift import ShiftCreate, ShiftUpdate, ShiftAvailability
+from app.models.shift import AvailableShift, DayOfWeek
 
 
 def create_shift(session: Session, shift_data: ShiftCreate) -> AvailableShift:
@@ -70,7 +71,7 @@ def get_shift_availability(session: Session, shift_id: int, date: date) -> Optio
 
     return ShiftAvailability(
         shift_id=shift.id,
-        shift_name=shift.name,
+        shift_name=shift.class_name,
         date=date,
         day_of_week=shift.day_of_week,
         start_time=shift.start_time,

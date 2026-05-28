@@ -11,6 +11,7 @@ class ReservationBase(SQLModel):
 
 class ReservationCreate(SQLModel):
     member_id: int
+    date: date
 
 
 class ReservationUpdate(SQLModel):
