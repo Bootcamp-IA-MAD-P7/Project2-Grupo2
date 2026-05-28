@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime, timezone
 
 class Member(SQLModel, table=True):
-    __tablename__ = "member"
+    __tablename__ = "members"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     first_name: str
