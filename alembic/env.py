@@ -1,3 +1,4 @@
+# Configuración de Alembic — importa todos los modelos para autogenerate.
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
@@ -8,8 +9,8 @@ from app.models.plan import Plan
 from app.models.member import Member
 from app.models.membership import Membership
 from app.models.payment import Payment
-from app.models.shift import Shift
-from app.models.booking import Booking
+from app.models.shift import AvailableShift
+from app.models.reservation import Reservation
 from app.models.attendance import Attendance
 from app.models.user import User
 

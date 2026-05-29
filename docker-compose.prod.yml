@@ -42,15 +42,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: >
-      sh -c "
-        echo '⏳ Running Alembic migrations...' &&
-        alembic upgrade head &&
-        echo '🚀 Starting GymAPI...' &&
-        gunicorn main:app -k uvicorn.workers.UvicornWorker
-          --workers 3 --bind 0.0.0.0:8000
-          --timeout 120 --access-logfile - --error-logfile -
-      "
+    command: gunicorn main:app -k uvicorn.workers.UvicornWorker --workers 3 --bind 0.0.0.0:8000 --timeout 120 --access-logfile - --error-logfile -
 
 volumes:
   postgres_data_prod:
