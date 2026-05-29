@@ -3,7 +3,7 @@ from app.models.member import MemberStatus
 
 
 def test_create_membership(client, auth_headers, active_member, monthly_plan):
-    r = client.post("/api/v1/memberships/", json={
+    r = client.post("/memberships/", json={
         "member_id": active_member.id,
         "plan_id": monthly_plan.id,
         "start_date": str(date.today()),
@@ -17,8 +17,8 @@ def test_do_not_create_suspended_member(client, auth_headers, session, monthly_p
     from app.models.member import Member
     m = Member(first_name="X", last_name="Y", email="xy@gym.es", status=MemberStatus.suspended)
     session.add(m); session.commit(); session.refresh(m)
-    r = client.post("/api/v1/memberships/", json={
-        "member_id": m.id, 
+    r = client.post("/memberships/", json={
+        "member_id": m.id,
         "plan_id": monthly_plan.id,
         "start_date": str(date.today()),
     }, headers=auth_headers)
@@ -26,12 +26,12 @@ def test_do_not_create_suspended_member(client, auth_headers, session, monthly_p
 
 
 def test_renew_membership(client, auth_headers, active_membership):
-    r = client.post(f"/api/v1/memberships/{active_membership.id}/renew", headers=auth_headers)
+    r = client.post(f"/memberships/{active_membership.id}/renew", headers=auth_headers)
     assert r.status_code == 201
     assert r.json()["status"] == "pending"
 
 
 def test_expiring_soon(client, auth_headers, active_membership):
-    r = client.get("/api/v1/memberships/expiring-soon?days=35", headers=auth_headers)
+    r = client.get("/memberships/expiring-soon?days=35", headers=auth_headers)
     assert r.status_code == 200
     assert len(r.json()) >= 1

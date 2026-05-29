@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -16,13 +17,16 @@ class Settings(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
 
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+    DATABASE_URL: Optional[str] = None
 
-    @property
-    def DATABASE_URL(self) -> str:
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"    
+    
+    def get_database_url(self) -> str:
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         return (
             f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}"
-            f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}?sslmode=require"
         )
 
     @property
