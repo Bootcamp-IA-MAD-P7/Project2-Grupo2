@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING
-
+from enum import Enum
 from sqlmodel import Field, Relationship, SQLModel
 
 # Esto evita que los archivos se bloqueen entre sí al importarse
@@ -8,6 +8,10 @@ if TYPE_CHECKING:
     from app.models.reservation import Reservation
     from app.models.attendance import Attendance
 
+class MemberStatus(str, Enum):
+    active = "active"
+    inactive = "inactive"
+    suspended = "suspended"
 
 class Member(SQLModel, table=True):
     __tablename__ = "members"  # <-- Mantenemos tus dos guiones bajos perfectos
@@ -23,4 +27,3 @@ class Member(SQLModel, table=True):
     # Las nuevas relaciones bidireccionales de tu modelo
     reservations: list["Reservation"] = Relationship(back_populates="member")
     attendances: list["Attendance"] = Relationship(back_populates="member")
-    
