@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 class Attendance(SQLModel, table=True):
     __tablename__ = "attendances"
+
     __table_args__ = (
         UniqueConstraint(
             "member_id",

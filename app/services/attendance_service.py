@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
 
@@ -17,6 +19,12 @@ def create_attendance(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Member not found",
+        )
+
+    if not member.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Attendance cannot be registered for an inactive member",
         )
 
     reservation = session.get(Reservation, attendance_data.reservation_id)
@@ -75,6 +83,49 @@ def get_attendances(
         .offset(offset)
         .limit(limit)
     )
+
     attendances = session.exec(statement).all()
 
     return attendances
+
+
+def get_attendance_by_id(
+    session: Session,
+    attendance_id: int,
+) -> Attendance:
+    attendance = session.get(Attendance, attendance_id)
+
+    if attendance is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attendance not found",
+        )
+
+    return attendance
+
+
+def register_check_out(
+    session: Session,
+    attendance_id: int,
+) -> Attendance:
+    attendance = session.get(Attendance, attendance_id)
+
+    if attendance is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attendance not found",
+        )
+
+    if attendance.check_out is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Check-out already registered for this attendance",
+        )
+
+    attendance.check_out = datetime.now(timezone.utc)
+
+    session.add(attendance)
+    session.commit()
+    session.refresh(attendance)
+
+    return attendance

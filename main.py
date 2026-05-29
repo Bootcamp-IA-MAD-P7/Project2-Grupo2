@@ -1,17 +1,17 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.config import settings
+from app.routers.attendance import router as attendance_router
+from app.routers.member import router as member_router
 from app.routers.membership import router as membership_router
 from app.routers.payment import router as payment_router
-
 from app.routers.plan import router as plan_router
-from app.routers.member import router as member_router
+from app.routers.report import router as report_router
 
-from app.routers.plan import router as plan_router
-from app.routers.member import router as member_router
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -37,11 +37,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CONECTAMOS EL ROUTER DE LOS PLANES Y DE LOS MIEMBROS
-app.include_router(plan_router)
-app.include_router(member_router)
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -50,8 +45,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(plan_router)
+app.include_router(member_router)
 app.include_router(membership_router, prefix="/api/v1")
 app.include_router(payment_router, prefix="/api/v1")
+app.include_router(attendance_router, prefix="/api/v1")
+app.include_router(report_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["health"])
