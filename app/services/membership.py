@@ -5,7 +5,6 @@ from decimal import Decimal
 from sqlmodel import Session, select
 from fastapi import HTTPException
 from ..models.membership import Membership, MembershipStatus
-from ..models.member import MemberStatus
 from ..models.payment import Payment, PaymentStatus
 from ..models.plan import Plan                         
 from ..schemas.membership import MembershipCreate, MembershipUpdate
@@ -39,8 +38,8 @@ class MembershipService:
         member = session.get(Member, data.member_id)
         if not member:
             raise HTTPException(status_code=404, detail="Member not found")
-        if member.status == MemberStatus.suspended:
-            raise HTTPException(status_code=400, detail="Cannot create a membership for a suspended member")
+        if not member.is_active:
+            raise HTTPException(status_code=400, detail="Cannot create a membership for an inactive member")
         plan = session.get(Plan, data.plan_id)
         if not plan:
             raise HTTPException(status_code=404, detail="Plan not found")
