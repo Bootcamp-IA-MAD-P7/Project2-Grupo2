@@ -1,0 +1,71 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: gym_db_prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: Europe/Madrid
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  api:
+    build: .
+    container_name: gym_api_prod
+    restart: always
+    environment:
+      APP_NAME: ${APP_NAME:-GymAPI}
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT:-5432}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏳ Running Alembic migrations...' &&
+        alembic upgrade head &&
+        echo '🚀 Starting GymAPI...' &&
+        gunicorn main:app -k uvicorn.workers.UvicornWorker
+          --workers 3 --bind 0.0.0.0:8000
+          --timeout 120 --access-logfile - --error-logfile -
+      "
+
+  nginx:
+    image: nginx:alpine
+    container_name: gym_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  default:
+    name: gym_network_prod
