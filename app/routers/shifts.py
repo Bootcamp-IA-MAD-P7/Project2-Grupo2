@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
-from app.database import get_session
+from app.db.session import get_session
 from app.models.shift import DayOfWeek
 from app.schemas.shift import ShiftCreate, ShiftUpdate, ShiftRead, ShiftAvailability
 from app.services import shift as shift_service
