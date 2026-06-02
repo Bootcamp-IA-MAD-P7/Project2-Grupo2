@@ -202,3 +202,18 @@ The module requires final validation with:
 - Attendance and report routers registered in `main.py`.
 - Real `Member` and `Reservation` data available.
 - Functional testing from Swagger at `/api/docs`.
+
+
+## 📋 Gestión del Negocio: Módulo de Planes y Estados
+
+### 1. Modelado de Planes de Suscripción
+En base a la estructura del archivo `plan.py`, el catálogo de tarifas del gimnasio se organiza bajo los siguientes parámetros del negocio:
+* **Nombre del Plan (`name`):** Identificador único de la tarifa (ej. Plan Básico, Plan Premium).
+* **Precio (`price`):** Valor numérico decimal que representa el coste mensual de la suscripción.
+* **Duración (`duration_days`):** Período de validez del plan, configurado de manera predeterminada en 30 días.
+
+### 2. Control de Estados del Miembro (MemberStatus)
+Para garantizar la lógica de accesos en el backend, la enumeración de estados en `member.py` restringe los flujos a tres situaciones comerciales válidas:
+* **Active:** Socio al corriente de pago con acceso total a las instalaciones y reservas.
+* **Inactive:** Socio en situación de baja temporal o con la suscripción web caducada.
+* **Suspended:** Acceso bloqueado por impagos del plan o por incidencias en el control de aforo.
