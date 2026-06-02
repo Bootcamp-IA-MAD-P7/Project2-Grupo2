@@ -25,7 +25,7 @@ def login(form: OAuth2PasswordRequestForm = Depends(), session: Session = Depend
     user = session.exec(select(User).where(User.username == form.username)).first()
     if not user or not verify_password(form.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return Token(access_token=create_access_token({"sub": str(user.id), "admin": user.is_admin}))
+    return Token(access_token=create_access_token(subject=user.id))
 
 
 @router.post("/register", response_model=dict)
