@@ -31,12 +31,6 @@ class Member(SQLModel, table=True):
     is_active: bool = Field(default=True)
     status: MemberStatus = Field(default=MemberStatus.active)
 
-<<<<<<< HEAD
-    # Las nuevas relaciones bidireccionales de tu modelo
-    reservations: list["Reservation"] = Relationship(back_populates="member")
-    attendances: list["Attendance"] = Relationship(back_populates="member")
-=======
     reservations: List["Reservation"] = Relationship(back_populates="member")
     attendances: List["Attendance"] = Relationship(back_populates="member")
     memberships: List["Membership"] = Relationship(back_populates="member")
->>>>>>> 57a472b38a046fbcf80a2fbde938630e8f03cd32

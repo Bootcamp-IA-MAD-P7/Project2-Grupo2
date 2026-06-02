@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool, create_engine
+from sqlalchemy import create_engine
 from alembic import context
 from sqlmodel import SQLModel
 import os
@@ -14,23 +14,12 @@ from app.models.attendance import Attendance
 from app.models.user import User
 
 config = context.config
-<<<<<<< HEAD
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
-=======
->>>>>>> developer
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = SQLModel.metadata
 
-<<<<<<< HEAD
-
-def run_migrations_offline():
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=target_metadata,
-                      literal_binds=True, dialect_opts={"paramstyle": "named"})
-=======
 DB_USER = os.getenv("DB_USER", "gymuser")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "gympassword")
 DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -47,21 +36,12 @@ def run_migrations_offline():
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
->>>>>>> developer
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online():
-<<<<<<< HEAD
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
-=======
     connectable = create_engine(DATABASE_URL)
->>>>>>> developer
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
