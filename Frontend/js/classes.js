@@ -1,36 +1,25 @@
 document.addEventListener("DOMContentLoaded", loadClasses);
 
-/**
- * Carga las clases desde el backend usando la ruta corregida /shifts/
- */
 async function loadClasses() {
-    // Usamos el contenedor definido en classes.html
-    const containerId = "classes-table-container";
-    showLoading(containerId); 
-
+    showLoading("classes-table-container");
     try {
-        // CORRECCIÓN: Se cambia "/available-shifts/" por "/shifts/" según el router del backend
         const classes = await getData("/shifts/");
         renderClassesTable(classes);
     } catch (error) {
-        console.error("Error al cargar clases:", error);
-        showError("No se pudieron cargar las clases. Revisa la conexión con el servidor.");
+        console.error("Error loading classes:", error);
+        showError("classes-table-container", "Could not load classes. Check server connection.");
     }
 }
 
-/**
- * Renderiza la tabla de clases con los datos del backend
- */
 function renderClassesTable(classes) {
     const container = document.getElementById("classes-table-container");
 
     if (!classes || classes.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <h5>No se encontraron clases</h5>
-                <p>Crea la primera clase o turno para comenzar a gestionar el horario del gimnasio.</p>
-            </div>
-        `;
+                <h5>No classes found</h5>
+                <p>Create the first class to start managing the gym schedule.</p>
+            </div>`;
         return;
     }
 
@@ -40,107 +29,72 @@ function renderClassesTable(classes) {
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Clase</th>
-                        <th>Fecha</th>
-                        <th>Horario</th>
-                        <th>Capacidad</th>
-                        <th>Disponibles</th>
-                        <th>Entrenador</th>
-                        <th>Estado</th>
+                        <th>Class</th>
+                        <th>Instructor</th>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${classes.map(item => `
                         <tr>
                             <td>${item.id}</td>
-                            <td class="fw-semibold">${item.name}</td>
-                            <td>${formatDate(item.date)}</td>
+                            <td class="fw-semibold">${item.class_name}</td>
+                            <td>${item.instructor || "-"}</td>
+                            <td class="text-capitalize">${item.day_of_week}</td>
                             <td>${item.start_time} - ${item.end_time}</td>
-                            <td>${item.capacity}</td>
-                            <td>${item.available_slots}</td>
-                            <td>${item.trainer_name || "-"}</td>
-                            <td>${renderStatusBadge(item.status)}</td>
-                        </tr>
-                    `).join("")}
+                            <td>${item.max_capacity}</td>
+                            <td>${item.active_slot
+                                ? '<span class="badge badge-soft-success">Active</span>'
+                                : '<span class="badge badge-soft-danger">Inactive</span>'
+                            }</td>
+                        </tr>`).join("")}
                 </tbody>
             </table>
-        </div>
-    `;
+        </div>`;
 }
 
-/**
- * Devuelve el badge HTML según el estado
- */
-function renderStatusBadge(status) {
-    const statusMap = {
-        'available': '<span class="badge badge-soft-success">Disponible</span>',
-        'full': '<span class="badge badge-soft-danger">Lleno</span>',
-        'cancelled': '<span class="badge badge-soft-danger">Cancelado</span>'
-    };
-    return statusMap[status] || '<span class="badge badge-soft-warning">Programado</span>';
-}
-
-/**
- * Abre el modal de creación
- */
 function openAddModal() {
-    const modalElement = document.getElementById("addClassModal");
-    if (modalElement) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-    }
+    const modal = new bootstrap.Modal(document.getElementById("addClassModal"));
+    modal.show();
 }
 
-/**
- * Envía la nueva clase al backend
- */
 async function submitAddClass() {
     const name = document.getElementById("className").value.trim();
-    const date = document.getElementById("classDate").value;
+    const instructor = document.getElementById("classInstructor").value.trim();
+    const dayOfWeek = document.getElementById("classDayOfWeek").value;
     const start = document.getElementById("classStart").value;
     const end = document.getElementById("classEnd").value;
     const capacity = document.getElementById("classCapacity").value;
-    const trainer = document.getElementById("classTrainer").value.trim();
-    const status = document.getElementById("classStatus").value;
     const errorDiv = document.getElementById("form-error");
 
-    // Validación básica
-
-    if (!name || !date || !start || !end || !capacity) {
-        errorDiv.textContent = "Por favor, completa todos los campos obligatorios.";
+    if (!name || !instructor || !start || !end || !capacity) {
+        errorDiv.textContent = "Please fill in all required fields.";
         errorDiv.classList.remove("d-none");
         return;
     }
 
     errorDiv.classList.add("d-none");
 
-    const newClass = {
-        name: name,
-        date: date,
-        start_time: start,
-        end_time: end,
-        capacity: parseInt(capacity),
-        available_slots: parseInt(capacity),
-        trainer_name: trainer,
-        status: status
-    };
-
     try {
-        // CORRECCIÓN: Se usa "/shifts/" para coincidir con el backend
-        await postData("/shifts/", newClass);
+        await postData("/shifts/", {
+            class_name: name,
+            instructor: instructor,
+            day_of_week: dayOfWeek,
+            start_time: start,
+            end_time: end,
+            max_capacity: parseInt(capacity),
+            active_slot: true
+        });
 
-        // Cerrar modal y limpiar
-        const modalElement = document.getElementById("addClassModal");
-        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-        if (modalInstance) modalInstance.hide();
-        
-        document.getElementById("addClassForm").reset();
-        
-        showSuccess("¡Clase añadida con éxito!");
-        loadClasses(); // Recargar la tabla
+        bootstrap.Modal.getInstance(document.getElementById("addClassModal")).hide();
+        showSuccess("Class added successfully!");
+        loadClasses();
     } catch (error) {
-        console.error("Error al guardar clase:", error);
-        errorDiv.textContent = "No se pudo guardar la clase. Inténtalo de nuevo.";
+        console.error("Error saving class:", error);
+        errorDiv.textContent = "Could not save class. Try again.";
         errorDiv.classList.remove("d-none");
     }
 }

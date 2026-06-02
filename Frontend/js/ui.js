@@ -1,33 +1,42 @@
-avaScript
 /**
  * ui.js - Funciones de interfaz y utilidad para Iron Pulse
  */
 
 // --- Gestión de Estados de Carga ---
-function showLoading() {
-    const loader = document.getElementById('global-loader');
-    if (loader) loader.classList.remove('d-none');
+function showLoading(containerId) {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 text-muted">Loading data...</p>
+            </div>`;
+    }
 }
 
-function hideLoading() {
-    const loader = document.getElementById('global-loader');
-    if (loader) loader.classList.add('d-none');
+function showError(containerId, message = "Something went wrong.") {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>${message}
+            </div>`;
+    }
 }
 
-// --- Notificaciones (Usando Toast o Alert de Bootstrap) ---
+// --- Notificaciones de éxito ---
 function showSuccess(message) {
-    alert(`✅ Éxito: ${message}`); 
-    // Recomendación: Cambiar por Toasts de Bootstrap para una mejor estética
-}
-
-function showError(message) {
-    alert(`❌ Error: ${message}`);
+    const alertContainer = document.getElementById("alert-container");
+    if (alertContainer) {
+        alertContainer.innerHTML = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+    }
 }
 
 // --- Formateadores de Datos ---
-/**
- * Formatea moneda a formato local (Euro por defecto)
- */
 function formatCurrency(amount) {
     return new Intl.NumberFormat('es-ES', {
         style: 'currency',
@@ -35,18 +44,12 @@ function formatCurrency(amount) {
     }).format(amount || 0);
 }
 
-/**
- * Formatea fechas ISO a legible
- */
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('es-ES', options);
 }
 
-/**
- * Limpia y reinicia formularios
- */
 function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classes</title>
+  <title>Classes | Iron Pulse</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="css/styles.css">
@@ -13,33 +13,24 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid px-4">
-        <a class="navbar-brand fw-bold" href="index.html">Iron Pulse</a>
-
-        <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-        >
+      <a class="navbar-brand fw-bold" href="index.html">Iron Pulse</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link active" href="index.html">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="members.html">Members</a></li>
-            <li class="nav-item"><a class="nav-link" href="plans.html">Plans</a></li>
-            <li class="nav-item"><a class="nav-link" href="classes.html">Classes</a></li>
-            <li class="nav-item"><a class="nav-link" href="payments.html">Payments</a></li>
-            <li class="nav-item"><a class="nav-link" href="attendance.html">Attendance</a></li>
-            <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="members.html">Members</a></li>
+          <li class="nav-item"><a class="nav-link" href="plans.html">Plans</a></li>
+          <li class="nav-item"><a class="nav-link active" href="classes.html">Classes</a></li>
+          <li class="nav-item"><a class="nav-link" href="payments.html">Payments</a></li>
+          <li class="nav-item"><a class="nav-link" href="attendance.html">Attendance</a></li>
+          <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
         </ul>
-        </div>
+      </div>
     </div>
-    </nav>
+  </nav>
 
   <!-- CONTENIDO -->
   <div class="page-container">
@@ -58,13 +49,11 @@
     <div id="alert-container"></div>
 
     <div class="content-card">
-      <div id="classes-table-container">
-        <!-- La tabla se carga aquí desde classes.js -->
-      </div>
+      <div id="classes-table-container"></div>
     </div>
   </div>
 
-  <!-- MODAL: Añadir clase -->
+  <!-- MODAL: Añadir clase — campos ajustados al backend -->
   <div class="modal fade" id="addClassModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -78,8 +67,20 @@
             <input type="text" class="form-control" id="className" placeholder="e.g. Yoga Flow">
           </div>
           <div class="mb-3">
-            <label class="form-label">Date *</label>
-            <input type="date" class="form-control" id="classDate">
+            <label class="form-label">Instructor *</label>
+            <input type="text" class="form-control" id="classInstructor" placeholder="e.g. Laura Gómez">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Day of Week *</label>
+            <select class="form-select" id="classDayOfWeek">
+              <option value="monday">Monday</option>
+              <option value="tuesday">Tuesday</option>
+              <option value="wednesday">Wednesday</option>
+              <option value="thursday">Thursday</option>
+              <option value="friday">Friday</option>
+              <option value="saturday">Saturday</option>
+              <option value="sunday">Sunday</option>
+            </select>
           </div>
           <div class="row">
             <div class="col mb-3">
@@ -92,20 +93,8 @@
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Capacity *</label>
+            <label class="form-label">Max Capacity *</label>
             <input type="number" class="form-control" id="classCapacity" placeholder="e.g. 20">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Trainer Name</label>
-            <input type="text" class="form-control" id="classTrainer" placeholder="e.g. Laura Gómez">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select class="form-select" id="classStatus">
-              <option value="available">Available</option>
-              <option value="full">Full</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
           </div>
           <div id="form-error" class="alert alert-danger d-none"></div>
         </div>
