@@ -5,7 +5,8 @@ from sqlmodel.pool import StaticPool
 from decimal import Decimal
 from datetime import date, timedelta
 
-from main import app
+import app.models  # ensure all models are registered with SQLAlchemy before create_all
+from main import app as fastapi_app
 from app.db.session import get_session
 from app.models.membership import Membership, MembershipStatus
 from app.models.payment import Payment, PaymentMethod, PaymentStatus
@@ -28,18 +29,17 @@ def session_fixture():
 def client_fixture(session: Session):
     def override():
         yield session
-    app.dependency_overrides[get_session] = override
-    yield TestClient(app)
-    app.dependency_overrides.clear()
+    fastapi_app.dependency_overrides[get_session] = override
+    yield TestClient(fastapi_app)
+    fastapi_app.dependency_overrides.clear()
 
 
 # ── Auth (stub sin JWT real) ───────────────────────────────────────────────
 @pytest.fixture(name="auth_headers")
 def auth_headers_fixture():
-    # Override get_current_user_sub para no necesitar un JWT real en tests
     from app.core.security import get_current_user_sub
-    app.dependency_overrides[get_current_user_sub] = lambda: "test_user"
-    return {}  # sin header real, la dependencia está mockeada
+    fastapi_app.dependency_overrides[get_current_user_sub] = lambda: 1
+    return {}
 
 
 # ── Datos de prueba ────────────────────────────────────────────────────────

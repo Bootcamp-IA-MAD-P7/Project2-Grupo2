@@ -1,7 +1,6 @@
 from datetime import datetime, date
-from decimal import Decimal
 from typing import Optional
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 from pydantic import model_validator
 from ..models.membership import MembershipStatus
 
@@ -27,8 +26,6 @@ class MembershipUpdate(SQLModel):
 
 class MembershipRead(MembershipBase):
     id: int
-    end_date: Optional[date]
-    is_active: bool = False
-    days_remaining: int = 0
+    end_date: Optional[date] = None
     created_at: datetime
     updated_at: datetime
