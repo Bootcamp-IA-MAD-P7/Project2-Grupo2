@@ -14,11 +14,6 @@ class MemberStatus(str, Enum):
     inactive = "inactive"
     suspended = "suspended"
 
-class MemberStatus(str, Enum):
-    active = "active"
-    inactive = "inactive"
-    suspended = "suspended"
-
 class Member(SQLModel, table=True):
     __tablename__ = "members"
 
