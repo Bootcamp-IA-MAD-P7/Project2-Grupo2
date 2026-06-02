@@ -1,12 +1,12 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 from sqlmodel import Session, select
 from sqlalchemy import func
+from fastapi import HTTPException
 
-from app.models.shift import AvailableShift
+from app.models.shift import AvailableShift, DayOfWeek
 from app.models.reservation import Reservation, ReservationStatus
 from app.schemas.shift import ShiftCreate, ShiftUpdate, ShiftAvailability
-from app.models.shift import AvailableShift, DayOfWeek
 
 
 def create_shift(session: Session, shift_data: ShiftCreate) -> AvailableShift:
@@ -17,8 +17,11 @@ def create_shift(session: Session, shift_data: ShiftCreate) -> AvailableShift:
     return shift
 
 
-def get_shift(session: Session, shift_id: int) -> Optional[AvailableShift]:
-    return session.get(AvailableShift, shift_id)
+def get_shift(session: Session, shift_id: int) -> AvailableShift:
+    shift = session.get(AvailableShift, shift_id)
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+    return shift
 
 
 def get_all_shifts(
@@ -30,45 +33,37 @@ def get_all_shifts(
     if day_of_week:
         statement = statement.where(AvailableShift.day_of_week == day_of_week)
     if name:
-        statement = statement.where(AvailableShift.name == name)
+        statement = statement.where(AvailableShift.class_name == name)
     return session.exec(statement).all()
 
 
-def update_shift(session: Session, shift_id: int, shift_data: ShiftUpdate) -> Optional[AvailableShift]:
-    shift = session.get(AvailableShift, shift_id)
-    if not shift:
-        return None
-    update_data = shift_data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
+def update_shift(session: Session, shift_id: int, shift_data: ShiftUpdate) -> AvailableShift:
+    shift = get_shift(session, shift_id)
+    for key, value in shift_data.model_dump(exclude_unset=True).items():
         setattr(shift, key, value)
+    shift.updated_at = datetime.utcnow()
     session.add(shift)
     session.commit()
     session.refresh(shift)
     return shift
 
 
-def delete_shift(session: Session, shift_id: int) -> bool:
-    shift = session.get(AvailableShift, shift_id)
-    if not shift:
-        return False
+def delete_shift(session: Session, shift_id: int) -> None:
+    shift = get_shift(session, shift_id)
     session.delete(shift)
     session.commit()
-    return True
 
 
-def get_shift_availability(session: Session, shift_id: int, date: date) -> Optional[ShiftAvailability]:
-    shift = session.get(AvailableShift, shift_id)
-    if not shift:
-        return None
-
-    statement = select(func.count(Reservation.id)).where(
-        Reservation.shift_id == shift_id,
-        Reservation.date == date,
-        Reservation.status == ReservationStatus.confirmed
-    )
-    active_bookings = session.exec(statement).one()
+def get_shift_availability(session: Session, shift_id: int, date: date) -> ShiftAvailability:
+    shift = get_shift(session, shift_id)
+    active_bookings = session.exec(
+        select(func.count(Reservation.id)).where(
+            Reservation.shift_id == shift_id,
+            Reservation.date == date,
+            Reservation.status == ReservationStatus.confirmed
+        )
+    ).one()
     available_spots = shift.max_capacity - active_bookings
-
     return ShiftAvailability(
         shift_id=shift.id,
         shift_name=shift.class_name,

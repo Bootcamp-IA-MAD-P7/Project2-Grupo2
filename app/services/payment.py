@@ -1,11 +1,12 @@
 import logging
 from decimal import Decimal
+from datetime import datetime
 from sqlmodel import Session, select
 from fastapi import HTTPException
+
 from ..models.payment import Payment, PaymentStatus
 from ..models.membership import Membership, MembershipStatus
 from ..schemas.payment import PaymentCreate, PaymentUpdate
-from datetime import datetime
 
 logger = logging.getLogger("gymapi")
 
@@ -38,13 +39,12 @@ class PaymentService:
             raise HTTPException(status_code=404, detail="Membership not found")
         if membership.status == MembershipStatus.cancelled:
             raise HTTPException(status_code=400, detail="Cannot register payments on cancelled memberships")
-        
+
         payment = Payment.model_validate(data)
         session.add(payment)
         session.flush()
-        
+
         if payment.status == PaymentStatus.completed and membership.status == MembershipStatus.pending:
-            # Query existing completed payments, excluding the current one to prevent double-counting if flushed
             previous_payments = session.exec(
                 select(Payment).where(
                     Payment.membership_id == membership.id,
@@ -52,18 +52,15 @@ class PaymentService:
                     Payment.id != payment.id
                 )
             ).all()
-            
             total = sum(p.amount for p in previous_payments) + payment.amount
-            
             from ..models.plan import Plan
             plan = session.get(Plan, membership.plan_id)
-            
             if plan and total >= plan.price:
                 membership.status = MembershipStatus.active
                 membership.updated_at = datetime.utcnow()
                 session.add(membership)
                 logger.info(f"Membership {membership.id} automatically activated via full payment")
-                
+
         session.commit()
         session.refresh(payment)
         return payment
@@ -80,7 +77,7 @@ class PaymentService:
             plan = session.get(Plan, membership.plan_id) if membership else None
             rows.append({
                 "id": p.id,
-                "member": member.full_name if member else "",
+                "member": f"{member.first_name} {member.last_name}" if member else "",  # fixed
                 "plan": plan.name if plan else "",
                 "amount": str(p.amount),
                 "payment_method": p.payment_method.value,

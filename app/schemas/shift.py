@@ -5,7 +5,7 @@ from app.models.shift import DayOfWeek
 
 
 class ShiftBase(SQLModel):
-    name: str = Field(max_length=100)
+    class_name: str = Field(max_length=100)
     instructor: str = Field(max_length=100)
     day_of_week: DayOfWeek
     start_time: time
@@ -19,7 +19,7 @@ class ShiftCreate(ShiftBase):
 
 
 class ShiftUpdate(SQLModel):
-    name: Optional[str] = Field(default=None, max_length=100)
+    class_name: Optional[str] = Field(default=None, max_length=100)  # fixed
     instructor: Optional[str] = Field(default=None, max_length=100)
     day_of_week: Optional[DayOfWeek] = None
     start_time: Optional[time] = None
