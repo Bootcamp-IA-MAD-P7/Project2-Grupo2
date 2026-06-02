@@ -10,6 +10,7 @@ from app.routers.member import router as member_router
 from app.routers.membership import router as membership_router
 from app.routers.payment import router as payment_router
 from app.routers.plan import router as plan_router
+from app.routers.auth import router as auth_router
 from app.routers.report import router as report_router
 from app.routers.reservations import router as reservations_router
 from app.routers.shifts import router as shifts_router
@@ -46,6 +47,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router, prefix="/api/v1")
 app.include_router(plan_router, prefix="/api/v1")
 app.include_router(member_router, prefix="/api/v1")
 app.include_router(membership_router, prefix="/api/v1")
