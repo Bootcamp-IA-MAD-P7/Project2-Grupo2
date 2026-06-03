@@ -59,30 +59,61 @@ function renderMembershipBadge(status) {
   return `<span class="badge badge-soft-warning">${status}</span>`;
 }
 
-function openAddModal() {
-  // Set today's date as default for start date
+async function openAddModal() {
   const today = new Date().toISOString().split("T")[0];
   document.getElementById("membershipStartDate").value = today;
   document.getElementById("form-error").classList.add("d-none");
+
+  // Load members and plans in parallel
+  const memberSelect = document.getElementById("membershipMemberId");
+  const planSelect   = document.getElementById("membershipPlanId");
+
+  memberSelect.innerHTML = `<option value="">Loading members...</option>`;
+  planSelect.innerHTML   = `<option value="">Loading plans...</option>`;
+
+  const [membersResult, plansResult] = await Promise.allSettled([
+    getData("/members/"),
+    getData("/plans/")
+  ]);
+
+  // Populate members
+  if (membersResult.status === "fulfilled" && membersResult.value?.length) {
+    memberSelect.innerHTML = `<option value="">Select a member...</option>` +
+      membersResult.value.map(m =>
+        `<option value="${m.id}">${m.id} — ${m.first_name} ${m.last_name}</option>`
+      ).join("");
+  } else {
+    memberSelect.innerHTML = `<option value="">Could not load members</option>`;
+  }
+
+  // Populate plans
+  if (plansResult.status === "fulfilled" && plansResult.value?.length) {
+    planSelect.innerHTML = `<option value="">Select a plan...</option>` +
+      plansResult.value.map(p =>
+        `<option value="${p.id}">${p.id} — ${p.name} (${formatCurrency(p.price)})</option>`
+      ).join("");
+  } else {
+    planSelect.innerHTML = `<option value="">Could not load plans</option>`;
+  }
 
   const modal = new bootstrap.Modal(document.getElementById("addMembershipModal"));
   modal.show();
 }
 
 async function submitAddMembership() {
-  const memberId   = document.getElementById("membershipMemberId").value;
-  const planId     = document.getElementById("membershipPlanId").value;
-  const startDate  = document.getElementById("membershipStartDate").value;
-  const status     = document.getElementById("membershipStatus").value;
-  const errorDiv   = document.getElementById("form-error");
+  const memberId  = document.getElementById("membershipMemberId").value;
+  const planId    = document.getElementById("membershipPlanId").value;
+  const startDate = document.getElementById("membershipStartDate").value;
+  const status    = document.getElementById("membershipStatus").value;
+  const errorDiv  = document.getElementById("form-error");
 
   if (!memberId) {
-    errorDiv.textContent = "Member ID is required.";
+    errorDiv.textContent = "Please select a member.";
     errorDiv.classList.remove("d-none");
     return;
   }
   if (!planId) {
-    errorDiv.textContent = "Plan ID is required.";
+    errorDiv.textContent = "Please select a plan.";
     errorDiv.classList.remove("d-none");
     return;
   }
@@ -107,7 +138,7 @@ async function submitAddMembership() {
     loadMemberships();
   } catch (error) {
     console.error("Error saving membership:", error);
-    errorDiv.textContent = "Could not save membership. Check that the Member ID and Plan ID exist.";
+    errorDiv.textContent = "Could not save membership. Try again.";
     errorDiv.classList.remove("d-none");
   }
 }
