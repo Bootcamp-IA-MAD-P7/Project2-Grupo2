@@ -33,6 +33,7 @@ function renderPaymentsTable(payments) {
                         <th>Amount</th>
                         <th>Date</th>
                         <th>Method</th>
+                        <th>Reference</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -44,6 +45,7 @@ function renderPaymentsTable(payments) {
                             <td class="fw-semibold">${formatCurrency(p.amount)}</td>
                             <td>${formatDate(p.payment_date)}</td>
                             <td class="text-capitalize">${p.payment_method || "-"}</td>
+                            <td>${p.reference || "-"}</td>
                             <td>${renderPaymentBadge(p.status)}</td>
                         </tr>`).join("")}
                 </tbody>
@@ -52,8 +54,9 @@ function renderPaymentsTable(payments) {
 }
 
 function renderPaymentBadge(status) {
-    if (status === "paid") return `<span class="badge badge-soft-success">Paid</span>`;
+    if (status === "completed") return `<span class="badge badge-soft-success">Completed</span>`;
     if (status === "pending") return `<span class="badge badge-soft-warning">Pending</span>`;
+    if (status === "refunded") return `<span class="badge badge-soft-warning">Refunded</span>`;
     return `<span class="badge badge-soft-danger">Failed</span>`;
 }
 
@@ -67,10 +70,17 @@ async function submitAddPayment() {
     const amount = document.getElementById("paymentAmount").value;
     const method = document.getElementById("paymentMethod").value;
     const status = document.getElementById("paymentStatus").value;
+    const reference = document.getElementById("paymentReference").value.trim();
+    const notes = document.getElementById("paymentNotes").value.trim();
     const errorDiv = document.getElementById("form-error");
 
-    if (!membershipId || !amount) {
-        errorDiv.textContent = "Membership ID and amount are required.";
+    if (!membershipId) {
+        errorDiv.textContent = "Membership ID is required.";
+        errorDiv.classList.remove("d-none");
+        return;
+    }
+    if (!amount || parseFloat(amount) <= 0) {
+        errorDiv.textContent = "Amount must be greater than 0.";
         errorDiv.classList.remove("d-none");
         return;
     }
@@ -83,8 +93,8 @@ async function submitAddPayment() {
             amount: parseFloat(amount),
             payment_method: method,
             status: status,
-            reference: "",
-            notes: ""
+            reference: reference,
+            notes: notes
         });
 
         bootstrap.Modal.getInstance(document.getElementById("addPaymentModal")).hide();

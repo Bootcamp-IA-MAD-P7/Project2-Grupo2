@@ -1,42 +1,39 @@
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 
-/**
- * Helper to get the auth token from localStorage
- */
-function getAuthHeader() {
-    const token = localStorage.getItem('access_token');
-    return token ? { 'Authorization': `Bearer ${token}` } : {};
+async function apiRequest(endpoint, options = {}) {
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      },
+      ...options
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    if (response.status === 204) {
+      return null;
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("API error:", error);
+    throw error;
+  }
 }
 
 async function getData(endpoint) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        headers: { ...getAuthHeader() }
-    });
-
-    if (response.status === 401) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-    return await response.json();
+  return apiRequest(endpoint);
 }
 
 async function postData(endpoint, data) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeader()
-        },
-        body: JSON.stringify(data)
-    });
-
-    if (response.status === 401) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-    return await response.json();
+  return apiRequest(endpoint, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
 }
