@@ -1,10 +1,13 @@
 document.addEventListener("DOMContentLoaded", loadMemberships);
 
+let existingMemberships = [];
+
 async function loadMemberships() {
   showLoading("memberships-table-container");
   try {
     const memberships = await getData("/memberships/");
-    renderMembershipsTable(memberships);
+    existingMemberships = memberships || [];
+    renderMembershipsTable(existingMemberships);
   } catch (error) {
     console.error("Error loading memberships:", error);
     showError("memberships-table-container", "Could not load memberships.");
@@ -13,7 +16,6 @@ async function loadMemberships() {
 
 function renderMembershipsTable(memberships) {
   const container = document.getElementById("memberships-table-container");
-
   if (!memberships || memberships.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
@@ -45,8 +47,8 @@ function renderMembershipsTable(memberships) {
                 <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${m.id}, '${m.status}')">
                   <i class="bi bi-pencil"></i> Edit
                 </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(${m.id})">
-                  <i class="bi bi-trash"></i> Cancel
+                <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteMembership(${m.id})">
+                  <i class="bi bi-trash"></i> Delete
                 </button>
               </td>
             </tr>`).join("")}
@@ -68,7 +70,6 @@ function renderMembershipBadge(status) {
   return `<span class="badge badge-soft-warning">${status}</span>`;
 }
 
-// ── Calcula y muestra la fecha de fin ─────────────────────────────────────
 function calculateEndDate() {
   const planSelect     = document.getElementById("membershipPlanId");
   const selectedOption = planSelect.options[planSelect.selectedIndex];
@@ -93,7 +94,8 @@ async function openAddModal() {
   document.getElementById("planInfoPrice").value    = "";
   document.getElementById("planInfoDuration").value = "";
   document.getElementById("planInfoEndDate").value  = "";
-  document.getElementById("membershipPlanId").selectedIndex = 0;
+  document.getElementById("membershipPlanId").selectedIndex  = 0;
+  document.getElementById("membershipMemberId").selectedIndex = 0;
 
   const memberSelect = document.getElementById("membershipMemberId");
   memberSelect.innerHTML = `<option value="">Loading members...</option>`;
@@ -102,7 +104,15 @@ async function openAddModal() {
     const members = await getData("/members/");
     memberSelect.innerHTML = members && members.length
       ? `<option value="">Select a member...</option>` +
-        members.map(m => `<option value="${m.id}">${m.id} — ${m.first_name} ${m.last_name}</option>`).join("")
+        members.map(m => {
+          const hasActive = existingMemberships.find(
+            ms => ms.member_id === m.id && ["active", "pending"].includes(ms.status)
+          );
+          const label = hasActive
+            ? `${m.id} — ${m.first_name} ${m.last_name} ⚠ already has membership`
+            : `${m.id} — ${m.first_name} ${m.last_name}`;
+          return `<option value="${m.id}" ${hasActive ? 'disabled style="color:#888"' : ""}>${label}</option>`;
+        }).join("")
       : `<option value="">No members found</option>`;
   } catch {
     memberSelect.innerHTML = `<option value="">Could not load members</option>`;
@@ -111,12 +121,26 @@ async function openAddModal() {
   new bootstrap.Modal(document.getElementById("addMembershipModal")).show();
 }
 
-// Se dispara al cambiar el plan
+function onMemberSelected() {
+  const memberId = parseInt(document.getElementById("membershipMemberId").value);
+  const errorDiv = document.getElementById("add-form-error");
+  if (!memberId) { errorDiv.classList.add("d-none"); return; }
+  const alreadyHas = existingMemberships.find(
+    m => m.member_id === memberId && ["active", "pending"].includes(m.status)
+  );
+  if (alreadyHas) {
+    errorDiv.textContent = `This member already has an active or pending membership (ID: ${alreadyHas.id}).`;
+    errorDiv.classList.remove("d-none");
+  } else {
+    errorDiv.classList.add("d-none");
+  }
+}
+
 function onPlanSelected() {
   const planSelect     = document.getElementById("membershipPlanId");
   const selectedOption = planSelect.options[planSelect.selectedIndex];
-  const price          = selectedOption.getAttribute("data-price");
-  const duration       = selectedOption.getAttribute("data-duration");
+  const price    = selectedOption.getAttribute("data-price");
+  const duration = selectedOption.getAttribute("data-duration");
 
   if (price && duration && planSelect.value !== "") {
     document.getElementById("planInfoPrice").value    = `€ ${parseFloat(price).toFixed(2)}`;
@@ -125,14 +149,10 @@ function onPlanSelected() {
     document.getElementById("planInfoPrice").value    = "";
     document.getElementById("planInfoDuration").value = "";
   }
-
   calculateEndDate();
 }
 
-// Se dispara al cambiar la fecha de inicio
-function onStartDateChanged() {
-  calculateEndDate();
-}
+function onStartDateChanged() { calculateEndDate(); }
 
 async function submitAddMembership() {
   const memberId  = document.getElementById("membershipMemberId").value;
@@ -144,6 +164,15 @@ async function submitAddMembership() {
   if (!memberId) { errorDiv.textContent = "Please select a member."; errorDiv.classList.remove("d-none"); return; }
   if (!planId)   { errorDiv.textContent = "Please select a plan.";   errorDiv.classList.remove("d-none"); return; }
   if (!startDate){ errorDiv.textContent = "Start date is required."; errorDiv.classList.remove("d-none"); return; }
+
+  const alreadyHas = existingMemberships.find(
+    m => m.member_id === parseInt(memberId) && ["active", "pending"].includes(m.status)
+  );
+  if (alreadyHas) {
+    errorDiv.textContent = `This member already has an active or pending membership (ID: ${alreadyHas.id}).`;
+    errorDiv.classList.remove("d-none");
+    return;
+  }
 
   errorDiv.classList.add("d-none");
 
@@ -185,20 +214,25 @@ async function submitEditMembership() {
   }
 }
 
-// ── CANCEL ────────────────────────────────────────────────────────────────
-function confirmDelete(id) {
-  document.getElementById("cancelMembershipId").value = id;
-  new bootstrap.Modal(document.getElementById("cancelMembershipModal")).show();
+// ── DELETE (físico) ───────────────────────────────────────────────────────
+function confirmDeleteMembership(id) {
+  document.getElementById("deleteMembershipId").value = id;
+  document.getElementById("delete-membership-error").classList.add("d-none");
+  new bootstrap.Modal(document.getElementById("deleteMembershipModal")).show();
 }
 
-async function submitCancelMembership() {
-  const id = document.getElementById("cancelMembershipId").value;
+async function submitDeleteMembership() {
+  const id       = document.getElementById("deleteMembershipId").value;
+  const errorDiv = document.getElementById("delete-membership-error");
+  errorDiv.classList.add("d-none");
+
   try {
-    await patchData(`/memberships/${id}`, { status: "cancelled" });
-    bootstrap.Modal.getInstance(document.getElementById("cancelMembershipModal")).hide();
-    showSuccess("Membership cancelled successfully.");
+    await deleteData(`/memberships/${id}`);
+    bootstrap.Modal.getInstance(document.getElementById("deleteMembershipModal")).hide();
+    showSuccess("Membership deleted successfully.");
     loadMemberships();
   } catch (error) {
-    console.error("Error cancelling membership:", error);
+    errorDiv.textContent = error.message || "Could not delete membership. It may have completed payments linked.";
+    errorDiv.classList.remove("d-none");
   }
 }

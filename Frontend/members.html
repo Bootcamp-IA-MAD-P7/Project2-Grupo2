@@ -39,8 +39,7 @@
           </ul>
           <div class="navbar-actions">
             <a class="nav-cta" href="classes.html">
-              Manage classes
-              <i class="bi bi-arrow-right"></i>
+              Manage classes <i class="bi bi-arrow-right"></i>
             </a>
           </div>
         </div>
@@ -165,7 +164,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Confirm Delete -->
+  <!-- MODAL: Delete Member -->
   <div class="modal fade" id="deleteMemberModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
@@ -175,8 +174,9 @@
         </div>
         <div class="modal-body">
           <input type="hidden" id="deleteMemberId" />
-          <p>Are you sure you want to deactivate <strong id="deleteMemberName"></strong>?</p>
-          <p class="text-muted small">The member will be permanently deleted from the system.</p>
+          <p>Are you sure you want to delete <strong id="deleteMemberName"></strong>?</p>
+          <p class="text-muted small">This action is permanent and cannot be undone.</p>
+          <div id="delete-form-error" class="alert alert-danger d-none mt-2"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

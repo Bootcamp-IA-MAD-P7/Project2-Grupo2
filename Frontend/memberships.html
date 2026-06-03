@@ -161,22 +161,23 @@
     </div>
   </div>
 
-  <!-- MODAL: Cancel Membership -->
-  <div class="modal fade" id="cancelMembershipModal" tabindex="-1">
+  <!-- MODAL: Delete Membership -->
+  <div class="modal fade" id="deleteMembershipModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Cancel Membership</h5>
+          <h5 class="modal-title">Delete Membership</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <input type="hidden" id="cancelMembershipId" />
+          <input type="hidden" id="deleteMembershipId" />
           <p>Are you sure you want to cancel this membership?</p>
-          <p class="text-muted small">The status will be set to Cancelled.</p>
+          <p class="text-muted small">The membership will be permanently deleted.</p>
+          <div id="delete-membership-error" class="alert alert-danger d-none mt-2"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
-          <button type="button" class="btn btn-danger" onclick="submitCancelMembership()">Cancel Membership</button>
+          <button type="button" class="btn btn-danger" onclick="submitDeleteMembership()">Delete Membership</button>
         </div>
       </div>
     </div>

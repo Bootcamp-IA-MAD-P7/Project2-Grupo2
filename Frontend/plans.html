@@ -113,15 +113,16 @@
   <div class="modal fade" id="deletePlanModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Deactivate Plan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header"><h5 class="modal-title">Delete Plan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
           <input type="hidden" id="deletePlanId" />
           <p>Are you sure you want to deactivate <strong id="deletePlanName"></strong>?</p>
-          <p class="text-muted small">The plan will be marked as Inactive and won't be available for new memberships.</p>
+          <p class="text-muted small">The plan will be permanently deleted from the system.</p>
+          <div id="delete-plan-error" class="alert alert-danger d-none mt-2"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-danger" onclick="submitDeletePlan()">Deactivate</button>
+          <button type="button" class="btn btn-danger" onclick="submitDeletePlan()">Delete</button>
         </div>
       </div>
     </div>

@@ -13,7 +13,6 @@ async function loadPlans() {
 
 function renderPlansTable(plans) {
     const container = document.getElementById("plans-table-container");
-
     if (!plans || plans.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
@@ -68,7 +67,6 @@ function renderPlansTable(plans) {
 // ── ADD ───────────────────────────────────────────────────────────────────
 function openAddModal() {
     document.getElementById("add-form-error").classList.add("d-none");
-    document.getElementById("addPlanModal").querySelector("form")?.reset();
     new bootstrap.Modal(document.getElementById("addPlanModal")).show();
 }
 
@@ -140,21 +138,26 @@ async function submitEditPlan() {
     }
 }
 
-// ── DELETE (soft) ─────────────────────────────────────────────────────────
+// ── DELETE (físico) ───────────────────────────────────────────────────────
 function confirmDelete(id, name) {
     document.getElementById("deletePlanName").textContent = name;
     document.getElementById("deletePlanId").value = id;
+    document.getElementById("delete-plan-error").classList.add("d-none");
     new bootstrap.Modal(document.getElementById("deletePlanModal")).show();
 }
 
 async function submitDeletePlan() {
-    const id = document.getElementById("deletePlanId").value;
+    const id       = document.getElementById("deletePlanId").value;
+    const errorDiv = document.getElementById("delete-plan-error");
+    errorDiv.classList.add("d-none");
+
     try {
-        await patchData(`/plans/${id}`, { active: false });
+        await deleteData(`/plans/${id}`);
         bootstrap.Modal.getInstance(document.getElementById("deletePlanModal")).hide();
-        showSuccess("Plan deactivated successfully.");
+        showSuccess("Plan deleted successfully.");
         loadPlans();
     } catch (error) {
-        console.error("Error deactivating plan:", error);
+        errorDiv.textContent = error.message || "Could not delete plan. It may have memberships linked to it.";
+        errorDiv.classList.remove("d-none");
     }
 }
