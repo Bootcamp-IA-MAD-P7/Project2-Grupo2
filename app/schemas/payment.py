@@ -8,7 +8,7 @@ from ..models.payment import PaymentMethod, PaymentStatus
 
 class PaymentBase(SQLModel):
     membership_id: int
-    amount: Decimal
+    amount: Optional[Decimal] = None
     payment_method: PaymentMethod
     status: PaymentStatus = PaymentStatus.pending
     reference: str = ""

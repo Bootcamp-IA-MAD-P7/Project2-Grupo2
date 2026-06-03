@@ -39,6 +39,14 @@ class PaymentService:
             raise HTTPException(status_code=404, detail="Membership not found")
         if membership.status == MembershipStatus.cancelled:
             raise HTTPException(status_code=400, detail="Cannot register payments on cancelled memberships")
+        
+        if data.amount is None:
+            from ..models.plan import Plan
+            plan = session.get(Plan, membership.plan_id)
+        if not plan:
+            raise HTTPException(status_code=404, detail="Plan not found")
+        data = data.model_copy(update={"amount": Decimal(str(plan.price))})
+
 
         payment = Payment.model_validate(data)
         session.add(payment)
