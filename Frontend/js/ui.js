@@ -1,3 +1,15 @@
+// ── Auth guard: redirect to login if no token ──────────────────────────────
+(function () {
+  const publicPages = ["login.html"];
+  const currentPage = window.location.pathname.split("/").pop() || "index.html";
+  const isPublic = publicPages.some(p => currentPage.includes(p));
+
+  if (!isPublic && !localStorage.getItem("access_token")) {
+    window.location.href = "login.html";
+  }
+})();
+
+// ── UI utilities ───────────────────────────────────────────────────────────
 function showLoading(containerId) {
     const container = document.getElementById(containerId);
     if (container) {
