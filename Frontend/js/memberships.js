@@ -1,11 +1,24 @@
 document.addEventListener("DOMContentLoaded", loadMemberships);
 
+// Cache de members para mostrar nombres en la tabla
+let membersMap = {};
 let existingMemberships = [];
 
 async function loadMemberships() {
   showLoading("memberships-table-container");
   try {
-    const memberships = await getData("/memberships/");
+    // Carga memberships y members en paralelo
+    const [memberships, members] = await Promise.all([
+      getData("/memberships/"),
+      getData("/members/")
+    ]);
+
+    // Construye un mapa id → nombre
+    membersMap = {};
+    (members || []).forEach(m => {
+      membersMap[m.id] = `${m.first_name} ${m.last_name}`;
+    });
+
     existingMemberships = memberships || [];
     renderMembershipsTable(existingMemberships);
   } catch (error) {
@@ -14,8 +27,13 @@ async function loadMemberships() {
   }
 }
 
+function getMemberName(memberId) {
+  return membersMap[memberId] || `Member ${memberId}`;
+}
+
 function renderMembershipsTable(memberships) {
   const container = document.getElementById("memberships-table-container");
+
   if (!memberships || memberships.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
@@ -30,15 +48,20 @@ function renderMembershipsTable(memberships) {
       <table class="table align-middle">
         <thead>
           <tr>
-            <th>ID</th><th>Member ID</th><th>Plan</th>
-            <th>Start Date</th><th>End Date</th><th>Status</th><th>Actions</th>
+            <th>ID</th>
+            <th>Member</th>
+            <th>Plan</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           ${memberships.map(m => `
             <tr>
               <td>${m.id}</td>
-              <td>${m.member_id}</td>
+              <td class="fw-semibold">${getMemberName(m.member_id)}</td>
               <td>${getPlanName(m.plan_id)}</td>
               <td>${formatDate(m.start_date)}</td>
               <td>${formatDate(m.end_date)}</td>
@@ -70,6 +93,7 @@ function renderMembershipBadge(status) {
   return `<span class="badge badge-soft-warning">${status}</span>`;
 }
 
+// ── Calcula fecha de fin ───────────────────────────────────────────────────
 function calculateEndDate() {
   const planSelect     = document.getElementById("membershipPlanId");
   const selectedOption = planSelect.options[planSelect.selectedIndex];
@@ -94,8 +118,7 @@ async function openAddModal() {
   document.getElementById("planInfoPrice").value    = "";
   document.getElementById("planInfoDuration").value = "";
   document.getElementById("planInfoEndDate").value  = "";
-  document.getElementById("membershipPlanId").selectedIndex  = 0;
-  document.getElementById("membershipMemberId").selectedIndex = 0;
+  document.getElementById("membershipPlanId").selectedIndex = 0;
 
   const memberSelect = document.getElementById("membershipMemberId");
   memberSelect.innerHTML = `<option value="">Loading members...</option>`;
@@ -121,26 +144,11 @@ async function openAddModal() {
   new bootstrap.Modal(document.getElementById("addMembershipModal")).show();
 }
 
-function onMemberSelected() {
-  const memberId = parseInt(document.getElementById("membershipMemberId").value);
-  const errorDiv = document.getElementById("add-form-error");
-  if (!memberId) { errorDiv.classList.add("d-none"); return; }
-  const alreadyHas = existingMemberships.find(
-    m => m.member_id === memberId && ["active", "pending"].includes(m.status)
-  );
-  if (alreadyHas) {
-    errorDiv.textContent = `This member already has an active or pending membership (ID: ${alreadyHas.id}).`;
-    errorDiv.classList.remove("d-none");
-  } else {
-    errorDiv.classList.add("d-none");
-  }
-}
-
 function onPlanSelected() {
   const planSelect     = document.getElementById("membershipPlanId");
   const selectedOption = planSelect.options[planSelect.selectedIndex];
-  const price    = selectedOption.getAttribute("data-price");
-  const duration = selectedOption.getAttribute("data-duration");
+  const price          = selectedOption.getAttribute("data-price");
+  const duration       = selectedOption.getAttribute("data-duration");
 
   if (price && duration && planSelect.value !== "") {
     document.getElementById("planInfoPrice").value    = `€ ${parseFloat(price).toFixed(2)}`;
@@ -185,7 +193,7 @@ async function submitAddMembership() {
     showSuccess("Membership created successfully!");
     loadMemberships();
   } catch (error) {
-    errorDiv.textContent = "Could not save membership. Try again.";
+    errorDiv.textContent = error.message || "Could not save membership. Try again.";
     errorDiv.classList.remove("d-none");
   }
 }
@@ -209,7 +217,7 @@ async function submitEditMembership() {
     showSuccess("Membership updated successfully!");
     loadMemberships();
   } catch (error) {
-    errorDiv.textContent = "Could not update membership. Try again.";
+    errorDiv.textContent = error.message || "Could not update membership. Try again.";
     errorDiv.classList.remove("d-none");
   }
 }

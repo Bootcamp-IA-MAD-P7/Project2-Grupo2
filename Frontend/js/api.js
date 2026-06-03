@@ -15,7 +15,19 @@ async function apiRequest(endpoint, options = {}) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Error ${response.status}: ${response.statusText}`);
+
+      // FastAPI puede devolver detail como string o como array de errores de validación
+      let message;
+      if (typeof errorData.detail === "string") {
+        message = errorData.detail;
+      } else if (Array.isArray(errorData.detail)) {
+        // Pydantic validation errors: array de objetos {loc, msg, type}
+        message = errorData.detail.map(e => `${e.loc?.join(" → ")}: ${e.msg}`).join(" | ");
+      } else {
+        message = `Error ${response.status}: ${response.statusText}`;
+      }
+
+      throw new Error(message);
     }
 
     if (response.status === 204) return null;
