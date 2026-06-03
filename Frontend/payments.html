@@ -118,12 +118,12 @@
 
           <div class="mb-3">
             <label class="form-label">Membership ID *</label>
-            <input type="number" class="form-control" id="paymentMembershipId" placeholder="e.g. 1">
+            <select class="form-select" id="paymentMembershipId" onchange="onMembershipSelected()"><option value="">Select a membership...</option></select>
           </div>
 
           <div class="mb-3">
             <label class="form-label">Amount (€) *</label>
-            <input type="number" step="0.01" class="form-control" id="paymentAmount" placeholder="e.g. 49.99">
+            <input type="number" step="0.01" class="form-control" id="paymentAmount" placeholder="Auto-filled from plan" />
           </div>
 
           <div class="mb-3">

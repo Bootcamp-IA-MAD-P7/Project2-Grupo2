@@ -32,6 +32,7 @@ function renderMembersTable(members) {
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,23 +47,35 @@ function renderMembersTable(members) {
                                     ${m.is_active ? 'Active' : 'Inactive'}
                                 </span>
                             </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                    onclick="openEditModal(${m.id}, '${m.first_name}', '${m.last_name}', '${m.email}', '${m.phone || ''}', ${m.is_active})">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger"
+                                    onclick="confirmDelete(${m.id}, '${m.first_name} ${m.last_name}')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </td>
                         </tr>`).join("")}
                 </tbody>
             </table>
         </div>`;
 }
 
+// ── ADD ───────────────────────────────────────────────────────────────────
 function openAddModal() {
-    const modal = new bootstrap.Modal(document.getElementById("addMemberModal"));
-    modal.show();
+    document.getElementById("addMemberForm").reset();
+    document.getElementById("add-form-error").classList.add("d-none");
+    new bootstrap.Modal(document.getElementById("addMemberModal")).show();
 }
 
 async function submitAddMember() {
     const firstName = document.getElementById("memberFirstName").value.trim();
-    const lastName = document.getElementById("memberLastName").value.trim();
-    const email = document.getElementById("memberEmail").value.trim();
-    const phone = document.getElementById("memberPhone").value.trim();
-    const errorDiv = document.getElementById("form-error");
+    const lastName  = document.getElementById("memberLastName").value.trim();
+    const email     = document.getElementById("memberEmail").value.trim();
+    const phone     = document.getElementById("memberPhone").value.trim();
+    const errorDiv  = document.getElementById("add-form-error");
 
     if (!firstName || !lastName) {
         errorDiv.textContent = "First name and last name are required.";
@@ -80,10 +93,10 @@ async function submitAddMember() {
     try {
         await postData("/members/", {
             first_name: firstName,
-            last_name: lastName,
-            email: email,
-            phone: phone || null,
-            is_active: true
+            last_name:  lastName,
+            email:      email,
+            phone:      phone || null,
+            is_active:  true
         });
         bootstrap.Modal.getInstance(document.getElementById("addMemberModal")).hide();
         showSuccess("Member added successfully!");
@@ -91,5 +104,75 @@ async function submitAddMember() {
     } catch (error) {
         errorDiv.textContent = "Could not save member. Try again.";
         errorDiv.classList.remove("d-none");
+    }
+}
+
+// ── EDIT ──────────────────────────────────────────────────────────────────
+function openEditModal(id, firstName, lastName, email, phone, isActive) {
+    document.getElementById("editMemberId").value      = id;
+    document.getElementById("editMemberFirstName").value = firstName;
+    document.getElementById("editMemberLastName").value  = lastName;
+    document.getElementById("editMemberEmail").value     = email;
+    document.getElementById("editMemberPhone").value     = phone;
+    document.getElementById("editMemberStatus").value    = isActive ? "true" : "false";
+    document.getElementById("edit-form-error").classList.add("d-none");
+    new bootstrap.Modal(document.getElementById("editMemberModal")).show();
+}
+
+async function submitEditMember() {
+    const id        = document.getElementById("editMemberId").value;
+    const firstName = document.getElementById("editMemberFirstName").value.trim();
+    const lastName  = document.getElementById("editMemberLastName").value.trim();
+    const email     = document.getElementById("editMemberEmail").value.trim();
+    const phone     = document.getElementById("editMemberPhone").value.trim();
+    const isActive  = document.getElementById("editMemberStatus").value === "true";
+    const errorDiv  = document.getElementById("edit-form-error");
+
+    if (!firstName || !lastName) {
+        errorDiv.textContent = "First name and last name are required.";
+        errorDiv.classList.remove("d-none");
+        return;
+    }
+    if (!email || !email.includes("@")) {
+        errorDiv.textContent = "Please enter a valid email address.";
+        errorDiv.classList.remove("d-none");
+        return;
+    }
+
+    errorDiv.classList.add("d-none");
+
+    try {
+        await patchData(`/members/${id}`, {
+            first_name: firstName,
+            last_name:  lastName,
+            email:      email,
+            phone:      phone || null,
+            is_active:  isActive
+        });
+        bootstrap.Modal.getInstance(document.getElementById("editMemberModal")).hide();
+        showSuccess("Member updated successfully!");
+        loadMembers();
+    } catch (error) {
+        errorDiv.textContent = "Could not update member. Try again.";
+        errorDiv.classList.remove("d-none");
+    }
+}
+
+// ── DELETE (soft) ─────────────────────────────────────────────────────────
+function confirmDelete(id, name) {
+    document.getElementById("deleteMemberName").textContent = name;
+    document.getElementById("deleteMemberId").value = id;
+    new bootstrap.Modal(document.getElementById("deleteMemberModal")).show();
+}
+
+async function submitDeleteMember() {
+    const id = document.getElementById("deleteMemberId").value;
+    try {
+        await patchData(`/members/${id}`, { is_active: false });
+        bootstrap.Modal.getInstance(document.getElementById("deleteMemberModal")).hide();
+        showSuccess("Member deactivated successfully.");
+        loadMembers();
+    } catch (error) {
+        console.error("Error deactivating member:", error);
     }
 }

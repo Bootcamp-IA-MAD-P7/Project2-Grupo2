@@ -18,9 +18,7 @@ async function apiRequest(endpoint, options = {}) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
-    if (response.status === 204) {
-      return null;
-    }
+    if (response.status === 204) return null;
 
     return await response.json();
 
@@ -39,4 +37,15 @@ async function postData(endpoint, data) {
     method: "POST",
     body: JSON.stringify(data)
   });
+}
+
+async function patchData(endpoint, data) {
+  return apiRequest(endpoint, {
+    method: "PATCH",
+    body: JSON.stringify(data)
+  });
+}
+
+async function deleteData(endpoint) {
+  return apiRequest(endpoint, { method: "DELETE" });
 }

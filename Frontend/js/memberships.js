@@ -28,12 +28,8 @@ function renderMembershipsTable(memberships) {
       <table class="table align-middle">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Member ID</th>
-            <th>Plan ID</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Status</th>
+            <th>ID</th><th>Member ID</th><th>Plan</th>
+            <th>Start Date</th><th>End Date</th><th>Status</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -41,14 +37,27 @@ function renderMembershipsTable(memberships) {
             <tr>
               <td>${m.id}</td>
               <td>${m.member_id}</td>
-              <td>${m.plan_id}</td>
+              <td>${getPlanName(m.plan_id)}</td>
               <td>${formatDate(m.start_date)}</td>
               <td>${formatDate(m.end_date)}</td>
               <td>${renderMembershipBadge(m.status)}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal(${m.id}, '${m.status}')">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(${m.id})">
+                  <i class="bi bi-trash"></i> Cancel
+                </button>
+              </td>
             </tr>`).join("")}
         </tbody>
       </table>
     </div>`;
+}
+
+function getPlanName(planId) {
+  const names = { 1: "Mensual", 2: "Semestral", 3: "Anual" };
+  return names[planId] || `Plan ${planId}`;
 }
 
 function renderMembershipBadge(status) {
@@ -59,45 +68,70 @@ function renderMembershipBadge(status) {
   return `<span class="badge badge-soft-warning">${status}</span>`;
 }
 
+// ── Calcula y muestra la fecha de fin ─────────────────────────────────────
+function calculateEndDate() {
+  const planSelect     = document.getElementById("membershipPlanId");
+  const selectedOption = planSelect.options[planSelect.selectedIndex];
+  const duration       = selectedOption ? parseInt(selectedOption.getAttribute("data-duration")) : null;
+  const startDate      = document.getElementById("membershipStartDate").value;
+  const endDateField   = document.getElementById("planInfoEndDate");
+
+  if (duration && startDate) {
+    const end = new Date(startDate);
+    end.setDate(end.getDate() + duration);
+    endDateField.value = end.toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric" });
+  } else {
+    endDateField.value = "";
+  }
+}
+
+// ── ADD ───────────────────────────────────────────────────────────────────
 async function openAddModal() {
   const today = new Date().toISOString().split("T")[0];
   document.getElementById("membershipStartDate").value = today;
-  document.getElementById("form-error").classList.add("d-none");
+  document.getElementById("add-form-error").classList.add("d-none");
+  document.getElementById("planInfoPrice").value    = "";
+  document.getElementById("planInfoDuration").value = "";
+  document.getElementById("planInfoEndDate").value  = "";
+  document.getElementById("membershipPlanId").selectedIndex = 0;
 
-  // Load members and plans in parallel
   const memberSelect = document.getElementById("membershipMemberId");
-  const planSelect   = document.getElementById("membershipPlanId");
-
   memberSelect.innerHTML = `<option value="">Loading members...</option>`;
-  planSelect.innerHTML   = `<option value="">Loading plans...</option>`;
 
-  const [membersResult, plansResult] = await Promise.allSettled([
-    getData("/members/"),
-    getData("/plans/")
-  ]);
-
-  // Populate members
-  if (membersResult.status === "fulfilled" && membersResult.value?.length) {
-    memberSelect.innerHTML = `<option value="">Select a member...</option>` +
-      membersResult.value.map(m =>
-        `<option value="${m.id}">${m.id} — ${m.first_name} ${m.last_name}</option>`
-      ).join("");
-  } else {
+  try {
+    const members = await getData("/members/");
+    memberSelect.innerHTML = members && members.length
+      ? `<option value="">Select a member...</option>` +
+        members.map(m => `<option value="${m.id}">${m.id} — ${m.first_name} ${m.last_name}</option>`).join("")
+      : `<option value="">No members found</option>`;
+  } catch {
     memberSelect.innerHTML = `<option value="">Could not load members</option>`;
   }
 
-  // Populate plans
-  if (plansResult.status === "fulfilled" && plansResult.value?.length) {
-    planSelect.innerHTML = `<option value="">Select a plan...</option>` +
-      plansResult.value.map(p =>
-        `<option value="${p.id}">${p.id} — ${p.name} (${formatCurrency(p.price)})</option>`
-      ).join("");
+  new bootstrap.Modal(document.getElementById("addMembershipModal")).show();
+}
+
+// Se dispara al cambiar el plan
+function onPlanSelected() {
+  const planSelect     = document.getElementById("membershipPlanId");
+  const selectedOption = planSelect.options[planSelect.selectedIndex];
+  const price          = selectedOption.getAttribute("data-price");
+  const duration       = selectedOption.getAttribute("data-duration");
+
+  if (price && duration && planSelect.value !== "") {
+    document.getElementById("planInfoPrice").value    = `€ ${parseFloat(price).toFixed(2)}`;
+    document.getElementById("planInfoDuration").value = `${duration} days`;
   } else {
-    planSelect.innerHTML = `<option value="">Could not load plans</option>`;
+    document.getElementById("planInfoPrice").value    = "";
+    document.getElementById("planInfoDuration").value = "";
   }
 
-  const modal = new bootstrap.Modal(document.getElementById("addMembershipModal"));
-  modal.show();
+  calculateEndDate();
+}
+
+// Se dispara al cambiar la fecha de inicio
+function onStartDateChanged() {
+  calculateEndDate();
 }
 
 async function submitAddMembership() {
@@ -105,40 +139,66 @@ async function submitAddMembership() {
   const planId    = document.getElementById("membershipPlanId").value;
   const startDate = document.getElementById("membershipStartDate").value;
   const status    = document.getElementById("membershipStatus").value;
-  const errorDiv  = document.getElementById("form-error");
+  const errorDiv  = document.getElementById("add-form-error");
 
-  if (!memberId) {
-    errorDiv.textContent = "Please select a member.";
-    errorDiv.classList.remove("d-none");
-    return;
-  }
-  if (!planId) {
-    errorDiv.textContent = "Please select a plan.";
-    errorDiv.classList.remove("d-none");
-    return;
-  }
-  if (!startDate) {
-    errorDiv.textContent = "Start date is required.";
-    errorDiv.classList.remove("d-none");
-    return;
-  }
+  if (!memberId) { errorDiv.textContent = "Please select a member."; errorDiv.classList.remove("d-none"); return; }
+  if (!planId)   { errorDiv.textContent = "Please select a plan.";   errorDiv.classList.remove("d-none"); return; }
+  if (!startDate){ errorDiv.textContent = "Start date is required."; errorDiv.classList.remove("d-none"); return; }
 
   errorDiv.classList.add("d-none");
 
   try {
     await postData("/memberships/", {
-      member_id:  parseInt(memberId),
-      plan_id:    parseInt(planId),
-      start_date: startDate,
-      status:     status
+      member_id: parseInt(memberId), plan_id: parseInt(planId),
+      start_date: startDate, status
     });
-
     bootstrap.Modal.getInstance(document.getElementById("addMembershipModal")).hide();
     showSuccess("Membership created successfully!");
     loadMemberships();
   } catch (error) {
-    console.error("Error saving membership:", error);
     errorDiv.textContent = "Could not save membership. Try again.";
     errorDiv.classList.remove("d-none");
+  }
+}
+
+// ── EDIT ──────────────────────────────────────────────────────────────────
+function openEditModal(id, currentStatus) {
+  document.getElementById("editMembershipId").value     = id;
+  document.getElementById("editMembershipStatus").value = currentStatus;
+  document.getElementById("edit-form-error").classList.add("d-none");
+  new bootstrap.Modal(document.getElementById("editMembershipModal")).show();
+}
+
+async function submitEditMembership() {
+  const id       = document.getElementById("editMembershipId").value;
+  const status   = document.getElementById("editMembershipStatus").value;
+  const errorDiv = document.getElementById("edit-form-error");
+  errorDiv.classList.add("d-none");
+  try {
+    await patchData(`/memberships/${id}`, { status });
+    bootstrap.Modal.getInstance(document.getElementById("editMembershipModal")).hide();
+    showSuccess("Membership updated successfully!");
+    loadMemberships();
+  } catch (error) {
+    errorDiv.textContent = "Could not update membership. Try again.";
+    errorDiv.classList.remove("d-none");
+  }
+}
+
+// ── CANCEL ────────────────────────────────────────────────────────────────
+function confirmDelete(id) {
+  document.getElementById("cancelMembershipId").value = id;
+  new bootstrap.Modal(document.getElementById("cancelMembershipModal")).show();
+}
+
+async function submitCancelMembership() {
+  const id = document.getElementById("cancelMembershipId").value;
+  try {
+    await patchData(`/memberships/${id}`, { status: "cancelled" });
+    bootstrap.Modal.getInstance(document.getElementById("cancelMembershipModal")).hide();
+    showSuccess("Membership cancelled successfully.");
+    loadMemberships();
+  } catch (error) {
+    console.error("Error cancelling membership:", error);
   }
 }

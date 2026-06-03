@@ -1126,3 +1126,147 @@ body::before {
     grid-template-columns: 1fr;
   }
 }
+/* ── MODALS - dark theme ───────────────────────────────────────────────── */
+.modal-content {
+  background: linear-gradient(145deg, rgba(10, 12, 18, 0.98), rgba(17, 24, 38, 0.96));
+  border: 1px solid rgba(255, 106, 0, 0.28);
+  color: var(--text-main);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.7);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+  color: var(--pure-white);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.btn-close {
+  filter: invert(1) brightness(0.7);
+}
+
+.form-label {
+  color: var(--text-soft) !important;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.form-text {
+  color: var(--text-muted) !important;
+}
+
+/* ── BOOTSTRAP TABLE DARK ──────────────────────────────────────────────── */
+.table {
+  color: var(--text-soft);
+}
+
+.table thead th {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.table td {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 106, 0, 0.06);
+  color: var(--text-main);
+}
+
+/* ── BADGES ────────────────────────────────────────────────────────────── */
+.badge-soft-success {
+  background-color: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+  border: 1px solid rgba(52, 199, 89, 0.35);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.badge-soft-warning {
+  background-color: rgba(255, 212, 0, 0.13);
+  color: #ffd400;
+  border: 1px solid rgba(255, 212, 0, 0.35);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.badge-soft-danger {
+  background-color: rgba(255, 69, 58, 0.13);
+  color: #ff453a;
+  border: 1px solid rgba(255, 69, 58, 0.35);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ── ACTION BAR & CARDS ────────────────────────────────────────────────── */
+.action-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.content-card {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  background: rgba(13, 15, 20, 0.55);
+  padding: 4px 0;
+  overflow: hidden;
+}
+
+.page-title {
+  margin: 0 0 6px;
+  color: var(--pure-white);
+  font-size: 28px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.page-subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+
+.empty-state h5 {
+  color: var(--text-soft);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ── READONLY PLAN INFO FIELDS ─────────────────────────────────────────── */
+.form-control.bg-light {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-soft) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  cursor: not-allowed;
+}
