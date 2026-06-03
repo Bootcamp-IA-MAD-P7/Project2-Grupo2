@@ -1,8 +1,3 @@
-/**
- * ui.js - Funciones de interfaz y utilidad para Iron Pulse
- */
-
-// --- Gestión de Estados de Carga ---
 function showLoading(containerId) {
     const container = document.getElementById(containerId);
     if (container) {
@@ -24,7 +19,6 @@ function showError(containerId, message = "Something went wrong.") {
     }
 }
 
-// --- Notificaciones de éxito ---
 function showSuccess(message) {
     const alertContainer = document.getElementById("alert-container");
     if (alertContainer) {
@@ -36,7 +30,6 @@ function showSuccess(message) {
     }
 }
 
-// --- Formateadores de Datos ---
 function formatCurrency(amount) {
     return new Intl.NumberFormat('es-ES', {
         style: 'currency',
@@ -54,3 +47,179 @@ function resetForm(formId) {
     const form = document.getElementById(formId);
     if (form) form.reset();
 }
+
+(function () {
+  function qs(selector, parent = document) {
+    return parent.querySelector(selector);
+  }
+
+  function qsa(selector, parent = document) {
+    return Array.from(parent.querySelectorAll(selector));
+  }
+
+  function setText(selectorOrId, value) {
+    const element =
+      document.getElementById(selectorOrId) || qs(selectorOrId);
+
+    if (!element) return;
+
+    element.textContent = value;
+  }
+
+  function setActiveNavigation() {
+    const currentPage = window.location.pathname.split("/").pop() || "index.html";
+
+    qsa(".navigation-menu .nav-link").forEach((link) => {
+      const linkPage = link.getAttribute("href");
+
+      link.classList.toggle("active", linkPage === currentPage);
+    });
+  }
+
+  function setFormStatus(form, message, type = "muted") {
+    const status = form.querySelector("[data-form-status]");
+
+    if (!status) return;
+
+    status.textContent = message;
+    status.dataset.status = type;
+  }
+
+  function renderLoadingRow(tableBody, colspan, message = "Loading data...") {
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="${colspan}" class="empty-table-message">
+          ${message}
+        </td>
+      </tr>
+    `;
+  }
+
+  function renderEmptyRow(tableBody, colspan, message = "No records loaded yet.") {
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="${colspan}" class="empty-table-message">
+          ${message}
+        </td>
+      </tr>
+    `;
+  }
+
+  function renderErrorRow(tableBody, colspan, message = "Data unavailable.") {
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="${colspan}" class="empty-table-message">
+          ${message}
+        </td>
+      </tr>
+    `;
+  }
+
+  function statusBadge(label, isActive = true) {
+    return `
+      <span class="status-badge ${isActive ? "" : "status-muted"}">
+        ${escapeHtml(label)}
+      </span>
+    `;
+  }
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "EUR",
+    }).format(Number(value || 0));
+  }
+
+  function formatDate(value) {
+    if (!value) return "-";
+
+    return new Date(value).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function formatDateTime(value) {
+    if (!value) return "-";
+
+    return new Date(value).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function formatValue(value) {
+    if (value === null || value === undefined || value === "") return "-";
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+
+    return String(value);
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function getAuthHeaders() {
+    const token = localStorage.getItem("ironPulseToken");
+
+    if (!token) return {};
+
+    return {
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
+  function showToast(message) {
+    let toast = qs(".app-toast");
+
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.className = "app-toast";
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.classList.add("is-visible");
+
+    window.setTimeout(() => {
+      toast.classList.remove("is-visible");
+    }, 2500);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setActiveNavigation();
+  });
+
+  window.IronPulseUI = {
+    qs,
+    qsa,
+    setText,
+    setActiveNavigation,
+    setFormStatus,
+    renderLoadingRow,
+    renderEmptyRow,
+    renderErrorRow,
+    statusBadge,
+    formatCurrency,
+    formatDate,
+    formatDateTime,
+    formatValue,
+    escapeHtml,
+    getAuthHeaders,
+    showToast,
+  };
+})();
