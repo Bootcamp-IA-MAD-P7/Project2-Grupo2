@@ -1,9 +1,4 @@
 # Project-CRUD-Python-G2
-<<<<<<< HEAD
-Proyecto grupal de CRUD con Python - Grupo 2
-HOLA
-hola 2
-=======
 ## 🧪 Cobertura de Calidad y Testing
 
 El backend de **Iron Pulse** cuenta con una capa de pruebas automatizadas que garantizan la estabilidad del software y previenen regresiones en entornos de producción. Las pruebas se dividen en dos enfoques estratégicos:
@@ -222,4 +217,3 @@ Para garantizar la lógica de accesos en el backend, la enumeración de estados 
 * **Active:** Socio al corriente de pago con acceso total a las instalaciones y reservas.
 * **Inactive:** Socio en situación de baja temporal o con la suscripción web caducada.
 * **Suspended:** Acceso bloqueado por impagos del plan o por incidencias en el control de aforo.
->>>>>>> 45567e6fc7cf9ef5d24451c02c2abcc3b553a603

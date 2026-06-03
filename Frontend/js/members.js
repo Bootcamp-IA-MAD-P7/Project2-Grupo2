@@ -92,11 +92,8 @@ async function submitAddMember() {
 
     try {
         await postData("/members/", {
-            first_name: firstName,
-            last_name:  lastName,
-            email:      email,
-            phone:      phone || null,
-            is_active:  true
+            first_name: firstName, last_name: lastName,
+            email, phone: phone || null, is_active: true
         });
         bootstrap.Modal.getInstance(document.getElementById("addMemberModal")).hide();
         showSuccess("Member added successfully!");
@@ -109,7 +106,7 @@ async function submitAddMember() {
 
 // ── EDIT ──────────────────────────────────────────────────────────────────
 function openEditModal(id, firstName, lastName, email, phone, isActive) {
-    document.getElementById("editMemberId").value      = id;
+    document.getElementById("editMemberId").value        = id;
     document.getElementById("editMemberFirstName").value = firstName;
     document.getElementById("editMemberLastName").value  = lastName;
     document.getElementById("editMemberEmail").value     = email;
@@ -143,11 +140,8 @@ async function submitEditMember() {
 
     try {
         await patchData(`/members/${id}`, {
-            first_name: firstName,
-            last_name:  lastName,
-            email:      email,
-            phone:      phone || null,
-            is_active:  isActive
+            first_name: firstName, last_name: lastName,
+            email, phone: phone || null, is_active: isActive
         });
         bootstrap.Modal.getInstance(document.getElementById("editMemberModal")).hide();
         showSuccess("Member updated successfully!");
@@ -158,7 +152,7 @@ async function submitEditMember() {
     }
 }
 
-// ── DELETE (soft) ─────────────────────────────────────────────────────────
+// ── DELETE (físico) ───────────────────────────────────────────────────────
 function confirmDelete(id, name) {
     document.getElementById("deleteMemberName").textContent = name;
     document.getElementById("deleteMemberId").value = id;
@@ -166,13 +160,18 @@ function confirmDelete(id, name) {
 }
 
 async function submitDeleteMember() {
-    const id = document.getElementById("deleteMemberId").value;
+    const id       = document.getElementById("deleteMemberId").value;
+    const errorDiv = document.getElementById("delete-form-error");
+    errorDiv.classList.add("d-none");
+
     try {
-        await patchData(`/members/${id}`, { is_active: false });
+        await deleteData(`/members/${id}`);
         bootstrap.Modal.getInstance(document.getElementById("deleteMemberModal")).hide();
-        showSuccess("Member deactivated successfully.");
+        showSuccess("Member deleted successfully.");
         loadMembers();
     } catch (error) {
-        console.error("Error deactivating member:", error);
+        // Mostrar error en el modal (p.ej. "Cannot delete a member with an active membership")
+        errorDiv.textContent = error.message || "Could not delete member. Try again.";
+        errorDiv.classList.remove("d-none");
     }
 }
