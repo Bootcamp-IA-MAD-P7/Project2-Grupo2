@@ -54,3 +54,19 @@ class MemberService:
         session.commit()
         session.refresh(member)
         return member
+
+    @staticmethod
+    def delete(session: Session, member_id: int) -> None:
+        from ..models.membership import Membership, MembershipStatus
+    from sqlmodel import select
+    member = MemberService.get_by_id(session, member_id)
+    active = session.exec(
+        select(Membership).where(
+            Membership.member_id == member_id,
+            Membership.status == MembershipStatus.active
+        )
+    ).first()
+    if active:
+        raise HTTPException(status_code=400, detail="Cannot delete a member with an active membership")
+    session.delete(member)
+    session.commit()

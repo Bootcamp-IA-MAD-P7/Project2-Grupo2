@@ -39,6 +39,14 @@ class PaymentService:
             raise HTTPException(status_code=404, detail="Membership not found")
         if membership.status == MembershipStatus.cancelled:
             raise HTTPException(status_code=400, detail="Cannot register payments on cancelled memberships")
+        
+        if data.amount is None:
+            from ..models.plan import Plan
+            plan = session.get(Plan, membership.plan_id)
+        if not plan:
+            raise HTTPException(status_code=404, detail="Plan not found")
+        data = data.model_copy(update={"amount": Decimal(str(plan.price))})
+
 
         payment = Payment.model_validate(data)
         session.add(payment)
@@ -86,3 +94,12 @@ class PaymentService:
                 "payment_date": p.payment_date.strftime("%d/%m/%Y %H:%M"),
             })
         return rows
+
+    @staticmethod
+    def delete(session: Session, payment_id: int) -> None:
+        from datetime import datetime, timedelta
+        payment = PaymentService.get_by_id(session, payment_id)
+        if datetime.utcnow() - payment.created_at > timedelta(minutes=30):
+            raise HTTPException(status_code=400, detail="Payment can only be deleted within 30 minutes of creation")
+        session.delete(payment)
+        session.commit()

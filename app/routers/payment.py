@@ -45,3 +45,8 @@ def export_csv(session: Session = Depends(get_session), _=auth):
 @router.get("/{payment_id}", response_model=PaymentRead, summary="Payment detail")
 def detail(payment_id: int, session: Session = Depends(get_session), _=auth):
     return PaymentService.get_by_id(session, payment_id)
+
+
+@router.delete("/{payment_id}", status_code=204, summary="Delete payment")
+def delete(payment_id: int, session: Session = Depends(get_session), _=auth):
+    PaymentService.delete(session, payment_id)
