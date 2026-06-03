@@ -5,6 +5,12 @@ from app.db.session import get_session
 from app.models.user import User
 from app.core.security import verify_password, create_access_token, hash_password
 from sqlmodel import SQLModel
+from app.core.security import (
+    oauth2_scheme,
+    blacklist_token,
+)
+from fastapi import Depends
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -37,3 +43,12 @@ def register(data: UserCreate, session: Session = Depends(get_session)):
     session.add(user)
     session.commit()
     return {"message": "User created", "username": data.username}
+
+
+@router.post("/logout")
+def logout(token: str = Depends(oauth2_scheme)):
+    blacklist_token(token)
+
+    return {
+        "message": "Successfully logged out"
+    }
