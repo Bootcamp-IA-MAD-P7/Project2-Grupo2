@@ -45,7 +45,7 @@ services:
           location / {
             root /usr/share/nginx/html;
             index login.html;
-            try_files $uri $uri/ /login.html;
+            try_files \$uri \$uri/ /login.html;
           }
           location /api/ {
             proxy_pass http://gymapi;
