@@ -47,7 +47,6 @@ services:
           }
           location /api/ {
             proxy_pass http://gymapi;
-            proxy_set_header Host $host;
           }
         }
         NGINXCONF
