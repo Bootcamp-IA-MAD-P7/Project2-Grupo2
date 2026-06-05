@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool, create_engine
+from sqlalchemy import create_engine
 from alembic import context
 from sqlmodel import SQLModel
 import os
