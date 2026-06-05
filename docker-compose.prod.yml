@@ -30,7 +30,7 @@ services:
       - api
     command: >
       sh -c "
-        printf 'upstream gymapi { server api:8000; }\nserver { listen 80; server_name _; client_max_body_size 10M; location / { root /usr/share/nginx/html; index login.html; try_files \$$uri \$$uri/ /login.html; } location /api/ { proxy_pass http://gymapi; proxy_set_header Host \$$host; proxy_set_header X-Real-IP \$$remote_addr; } }' > /etc/nginx/conf.d/default.conf &&
+        printf 'upstream gymapi {\n  server api:8000;\n}\nserver {\n  listen 80;\n  server_name _;\n  location / {\n    root /usr/share/nginx/html;\n    index login.html;\n    try_files \$$uri \$$uri/ /login.html;\n  }\n  location /api/ {\n    proxy_pass http://gymapi;\n    proxy_set_header Host \$$host;\n  }\n}\n' > /etc/nginx/conf.d/default.conf &&
         nginx -g 'daemon off;'
       "
 
