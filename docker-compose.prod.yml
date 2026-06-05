@@ -28,6 +28,8 @@ services:
       - "80:80"
     depends_on:
       - api
+    volumes:
+      - /var/lib/docker/volumes/portainer_data/_data/compose/23/Frontend:/usr/share/nginx/html
     entrypoint: []
     command:
       - sh
