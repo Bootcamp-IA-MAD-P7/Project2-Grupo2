@@ -19,16 +19,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    nginx:
-      image: nginx:alpine
-      container_name: gym_nginx_prod
-      restart: always
-      ports:
-       - "80:80"
-      volumes:
+
+  nginx:
+    image: nginx:alpine
+    container_name: gym_nginx_prod
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./Frontend:/usr/share/nginx/html
-      depends_on:
+    depends_on:
       - api
 
   api:
@@ -47,9 +48,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: db
       DB_PORT: ${DB_PORT:-5432}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
-    ports:
-      - "8000:8000"
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    expose:
+      - "8000"
     depends_on:
       db:
         condition: service_healthy
