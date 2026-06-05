@@ -1,23 +1,53 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
-from typing import List
-from app.db.session import get_session
-from app.models.plan import Plan
-from app.schemas.plan import PlanCreate, PlanResponse
+from typing import Optional
+from fastapi import APIRouter, Depends, Query
+from sqlmodel import Session
+
+from ..db.session import get_session
+from ..core.security import get_current_user_sub
+from ..services.plan import PlanService
+from ..schemas.plan import PlanCreate, PlanResponse, PlanUpdate
 
 router = APIRouter(prefix="/plans", tags=["plans"])
+auth = Depends(get_current_user_sub)
 
-# RUTA PARA CREAR UN PLAN NUEVO
-@router.post("/", response_model=PlanResponse)
-def create_plan(plan: PlanCreate, db: Session = Depends(get_session)):
-    db_plan = Plan.model_validate(plan)
-    db.add(db_plan)
-    db.commit()
-    db.refresh(db_plan)
-    return db_plan
 
-# RUTA PARA OBTENER LA LISTA DE TODOS LOS PLANES
-@router.get("/", response_model=List[PlanResponse])
-def read_plans(db: Session = Depends(get_session)):
-    plans = db.exec(select(Plan)).all()
-    return plans
+@router.get("/", response_model=list[PlanResponse])
+def list_plans(
+    active: Optional[bool] = None,
+    session: Session = Depends(get_session),
+    _=auth
+):
+    return PlanService.get_all(session, active=active)
+
+
+@router.post("/", response_model=PlanResponse, status_code=201)
+def create_plan(
+    data: PlanCreate,
+    session: Session = Depends(get_session),
+    _=auth
+):
+    return PlanService.create(session, data)
+
+
+@router.get("/{plan_id}", response_model=PlanResponse)
+def get_plan(
+    plan_id: int,
+    session: Session = Depends(get_session),
+    _=auth
+):
+    return PlanService.get_by_id(session, plan_id)
+
+
+@router.patch("/{plan_id}", response_model=PlanResponse)
+def update_plan(
+    plan_id: int,
+    data: PlanUpdate,
+    session: Session = Depends(get_session),
+    _=auth
+):
+    return PlanService.update(session, plan_id, data)
+
+@router.delete("/{plan_id}", status_code=200)
+def delete_plan(plan_id: int, session: Session = Depends(get_session), _=auth):
+    PlanService.delete(session, plan_id)
+    return {"message": "Plan deleted successfully"}

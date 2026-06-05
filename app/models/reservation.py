@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from enum import Enum
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import UniqueConstraint
 
@@ -33,4 +33,4 @@ class Reservation(SQLModel, table=True):
 
     member: Optional["Member"] = Relationship(back_populates="reservations")
     shift: Optional["AvailableShift"] = Relationship(back_populates="reservations")
-    attendances: list["Attendance"] = Relationship(back_populates="reservation")
+    attendances: List["Attendance"] = Relationship(back_populates="reservation")

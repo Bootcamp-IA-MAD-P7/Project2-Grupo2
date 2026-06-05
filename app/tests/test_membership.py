@@ -18,7 +18,7 @@ def test_do_not_create_suspended_member(client, auth_headers, session, monthly_p
     m = Member(first_name="X", last_name="Y", email="xy@gym.es", status=MemberStatus.suspended)
     session.add(m); session.commit(); session.refresh(m)
     r = client.post("/api/v1/memberships/", json={
-        "member_id": m.id, 
+        "member_id": m.id,
         "plan_id": monthly_plan.id,
         "start_date": str(date.today()),
     }, headers=auth_headers)

@@ -12,9 +12,14 @@ auth = Depends(get_current_user_sub)
 
 
 @router.get("/", response_model=list[MembershipRead], summary="List memberships")
-def list_memberships(status: Optional[MembershipStatus] = None, member_id: Optional[int] = None,
-                     skip: int = 0, limit: int = Query(20, le=100),
-                     session: Session = Depends(get_session), _=auth):
+def list_memberships(
+    status: Optional[MembershipStatus] = None,
+    member_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = Query(20, le=100),
+    session: Session = Depends(get_session),
+    _=auth
+):
     return MembershipService.get_all(session, status=status, member_id=member_id, skip=skip, limit=limit)
 
 
@@ -24,19 +29,26 @@ def create(data: MembershipCreate, session: Session = Depends(get_session), _=au
 
 
 @router.get("/expiring-soon", response_model=list[MembershipRead], summary="Memberships expiring soon")
-def expiring_soon(days: int = Query(7, ge=1, le=60), session: Session = Depends(get_session), _=auth):
-    memberships = MembershipService.get_expiring_soon(session, days)
-    return memberships
+def expiring_soon(
+    days: int = Query(7, ge=1, le=60),
+    session: Session = Depends(get_session),
+    _=auth
+):
+    return MembershipService.expiring_soon(session, days)
 
 
 @router.get("/{membership_id}", response_model=MembershipRead, summary="Membership detail")
 def detail(membership_id: int, session: Session = Depends(get_session), _=auth):
-    return MembershipService.expiring_soon(session, membership_id)
+    return MembershipService.get_by_id(session, membership_id)  # fixed
 
 
 @router.patch("/{membership_id}", response_model=MembershipRead, summary="Update status")
-def update(membership_id: int, data: MembershipUpdate, session: Session = Depends(get_session), _=auth):
-    from ..services.membership import MembershipService
+def update(
+    membership_id: int,
+    data: MembershipUpdate,
+    session: Session = Depends(get_session),
+    _=auth
+):
     from datetime import datetime
     membership = MembershipService.get_by_id(session, membership_id)
     for field, value in data.model_dump(exclude_unset=True).items():

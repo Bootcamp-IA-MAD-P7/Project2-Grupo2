@@ -1,23 +1,58 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
-from typing import List
-from app.db.session import get_session
-from app.models.member import Member
-from app.schemas.member import MemberCreate, MemberResponse
+from typing import Optional
+from fastapi import APIRouter, Depends, Query
+from sqlmodel import Session
+
+from ..db.session import get_session
+from ..core.security import get_current_user_sub
+from ..schemas.member import MemberCreate, MemberRead, MemberUpdate
 
 router = APIRouter(prefix="/members", tags=["members"])
+auth = Depends(get_current_user_sub)
 
-# RUTA PARA REGISTRAR UN MIEMBRO NUEVO
-@router.post("/", response_model=MemberResponse)
-def create_member(member: MemberCreate, db: Session = Depends(get_session)):
-    db_member = Member.model_validate(member)
-    db.add(db_member)
-    db.commit()
-    db.refresh(db_member)
-    return db_member
 
-# RUTA PARA OBTENER LA LISTA DE TODOS LOS MIEMBROS
-@router.get("/", response_model=List[MemberResponse])
-def read_members(db: Session = Depends(get_session)):
-    members = db.exec(select(Member)).all()
-    return members
+@router.get("/", response_model=list[MemberRead])
+def list_members(
+    is_active: Optional[bool] = None,
+    skip: int = 0,
+    limit: int = Query(20, le=100),
+    session: Session = Depends(get_session),
+    _=auth
+):
+    from ..services.member import MemberService
+    return MemberService.get_all(session, is_active=is_active, skip=skip, limit=limit)
+
+
+@router.post("/", response_model=MemberRead, status_code=201)
+def create_member(
+    data: MemberCreate,
+    session: Session = Depends(get_session),
+    _=auth
+):
+    from ..services.member import MemberService
+    return MemberService.create(session, data)
+
+
+@router.get("/{member_id}", response_model=MemberRead)
+def get_member(
+    member_id: int,
+    session: Session = Depends(get_session),
+    _=auth
+):
+    from ..services.member import MemberService
+    return MemberService.get_by_id(session, member_id)
+
+
+@router.patch("/{member_id}", response_model=MemberRead)
+def update_member(
+    member_id: int,
+    data: MemberUpdate,
+    session: Session = Depends(get_session),
+    _=auth
+):
+    from ..services.member import MemberService
+    return MemberService.update(session, member_id, data)
+
+@router.delete("/{member_id}", status_code=204)
+def delete_member(member_id: int, session: Session = Depends(get_session), _=auth):
+    from ..services.member import MemberService
+    MemberService.delete(session, member_id)

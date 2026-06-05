@@ -1,8 +1,8 @@
-# Configuración de Alembic — importa todos los modelos para autogenerate.
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, create_engine
 from alembic import context
 from sqlmodel import SQLModel
+import os
 
 from app.core.config import settings
 from app.models.plan import Plan
@@ -22,6 +22,22 @@ if config.config_file_name is not None:
 
 target_metadata = SQLModel.metadata
 
+DB_USER = os.getenv("DB_USER", "gymuser")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "gympassword")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "gym_db")
+
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+
+def run_migrations_offline():
+    context.configure(
+        url=DATABASE_URL,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
@@ -32,6 +48,7 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
+    connectable = create_engine(DATABASE_URL)
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
