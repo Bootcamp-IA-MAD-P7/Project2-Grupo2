@@ -28,11 +28,30 @@ services:
       - "80:80"
     depends_on:
       - api
-    command: >
-      sh -c "
-        printf 'upstream gymapi {\n  server api:8000;\n}\nserver {\n  listen 80;\n  server_name _;\n  location / {\n    root /usr/share/nginx/html;\n    index login.html;\n    try_files \$$uri \$$uri/ /login.html;\n  }\n  location /api/ {\n    proxy_pass http://gymapi;\n    proxy_set_header Host \$$host;\n  }\n}\n' > /etc/nginx/conf.d/default.conf &&
+    entrypoint: []
+    command:
+      - sh
+      - -c
+      - |
+        cat > /etc/nginx/conf.d/default.conf << 'NGINXCONF'
+        upstream gymapi {
+          server api:8000;
+        }
+        server {
+          listen 80;
+          server_name _;
+          location / {
+            root /usr/share/nginx/html;
+            index login.html;
+            try_files $uri $uri/ /login.html;
+          }
+          location /api/ {
+            proxy_pass http://gymapi;
+            proxy_set_header Host $host;
+          }
+        }
+        NGINXCONF
         nginx -g 'daemon off;'
-      "
 
   api:
     build: .
