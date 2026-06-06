@@ -1,21 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const today = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(today.getDate() - 30);
+    // Usar fecha local (no UTC) para evitar desfase de zona horaria
+    const now = new Date();
+    const localDate = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+    };
 
-    document.getElementById("endDate").value = today.toISOString().split("T")[0];
-    document.getElementById("startDate").value = thirtyDaysAgo.toISOString().split("T")[0];
+    const today = localDate(now);
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+
+    document.getElementById("endDate").value   = today;
+    document.getElementById("startDate").value = localDate(thirtyDaysAgo);
 
     loadAllReports();
 });
 
 async function loadAllReports() {
     const startDate = document.getElementById("startDate").value;
-    const endDate = document.getElementById("endDate").value;
+    const endDate   = document.getElementById("endDate").value;
 
-    const params = startDate && endDate
-        ? `?start_date=${startDate}&end_date=${endDate}`
-        : "";
+    if (startDate && endDate && startDate > endDate) {
+        showError("alert-container", "Start date cannot be after end date.");
+        return;
+    }
+
+    const params = startDate && endDate ? `?start_date=${startDate}&end_date=${endDate}` : "";
 
     await Promise.all([
         loadIncomeReport(params),
@@ -25,33 +37,46 @@ async function loadAllReports() {
     ]);
 }
 
+// ── Income ────────────────────────────────────────────────────────────────
 async function loadIncomeReport(params) {
+    const incomeEl   = document.getElementById("kpi-income");
+    const paymentsEl = document.getElementById("kpi-payments");
+
+    incomeEl.textContent   = "Loading...";
+    paymentsEl.textContent = "Loading...";
+
     try {
         const data = await getData(`/reports/income${params}`);
-        document.getElementById("kpi-income").textContent = formatCurrency(data.total_income);
-        document.getElementById("kpi-payments").textContent = data.total_payments;
+        incomeEl.textContent   = formatCurrency(data.total_income);
+        paymentsEl.textContent = data.total_payments;
     } catch (error) {
         console.error("Error loading income report:", error);
-        document.getElementById("kpi-income").textContent = "Error";
-        document.getElementById("kpi-payments").textContent = "Error";
+        incomeEl.textContent   = "—";
+        paymentsEl.textContent = "—";
     }
 }
 
+// ── Attendance summary ────────────────────────────────────────────────────
 async function loadAttendanceSummary(params) {
+    ["kpi-total-att", "kpi-checkins", "kpi-checkouts", "kpi-inside"].forEach(id => {
+        document.getElementById(id).textContent = "Loading...";
+    });
+
     try {
         const data = await getData(`/reports/attendance${params}`);
         document.getElementById("kpi-total-att").textContent = data.total_attendances;
-        document.getElementById("kpi-checkins").textContent = data.total_check_ins;
+        document.getElementById("kpi-checkins").textContent  = data.total_check_ins;
         document.getElementById("kpi-checkouts").textContent = data.total_check_outs;
-        document.getElementById("kpi-inside").textContent = data.current_people_inside;
+        document.getElementById("kpi-inside").textContent   = data.current_people_inside;
     } catch (error) {
         console.error("Error loading attendance summary:", error);
         ["kpi-total-att", "kpi-checkins", "kpi-checkouts", "kpi-inside"].forEach(id => {
-            document.getElementById(id).textContent = "Error";
+            document.getElementById(id).textContent = "—";
         });
     }
 }
 
+// ── Attendance by member ──────────────────────────────────────────────────
 async function loadAttendanceByMember(params) {
     showLoading("attendance-by-member-container");
     try {
@@ -59,7 +84,10 @@ async function loadAttendanceByMember(params) {
 
         if (!data || data.length === 0) {
             document.getElementById("attendance-by-member-container").innerHTML = `
-                <div class="empty-state"><h5>No data available</h5></div>`;
+                <div class="empty-state">
+                    <h5>No data available</h5>
+                    <p>No attendance records found for the selected period.</p>
+                </div>`;
             return;
         }
 
@@ -84,10 +112,12 @@ async function loadAttendanceByMember(params) {
                 </table>
             </div>`;
     } catch (error) {
+        console.error("Error loading attendance by member:", error);
         showError("attendance-by-member-container", "Could not load attendance by member.");
     }
 }
 
+// ── Attendance by shift ───────────────────────────────────────────────────
 async function loadAttendanceByShift(params) {
     showLoading("attendance-by-shift-container");
     try {
@@ -95,7 +125,10 @@ async function loadAttendanceByShift(params) {
 
         if (!data || data.length === 0) {
             document.getElementById("attendance-by-shift-container").innerHTML = `
-                <div class="empty-state"><h5>No data available</h5></div>`;
+                <div class="empty-state">
+                    <h5>No data available</h5>
+                    <p>No attendance records linked to shifts found for the selected period.</p>
+                </div>`;
             return;
         }
 
@@ -120,6 +153,7 @@ async function loadAttendanceByShift(params) {
                 </table>
             </div>`;
     } catch (error) {
+        console.error("Error loading attendance by shift:", error);
         showError("attendance-by-shift-container", "Could not load attendance by shift.");
     }
 }
