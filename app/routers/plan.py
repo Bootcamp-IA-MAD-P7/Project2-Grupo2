@@ -46,3 +46,8 @@ def update_plan(
     _=auth
 ):
     return PlanService.update(session, plan_id, data)
+
+@router.delete("/{plan_id}", status_code=200)
+def delete_plan(plan_id: int, session: Session = Depends(get_session), _=auth):
+    PlanService.delete(session, plan_id)
+    return {"message": "Plan deleted successfully"}

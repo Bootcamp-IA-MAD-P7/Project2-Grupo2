@@ -51,3 +51,8 @@ def update_member(
 ):
     from ..services.member import MemberService
     return MemberService.update(session, member_id, data)
+
+@router.delete("/{member_id}", status_code=204)
+def delete_member(member_id: int, session: Session = Depends(get_session), _=auth):
+    from ..services.member import MemberService
+    MemberService.delete(session, member_id)
